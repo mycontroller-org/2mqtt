@@ -45,6 +45,16 @@ adapters:   # you can have more than one adapter
 Both released and master branch container images are published in to the following registries,
   * [Docker Hub](https://hub.docker.com/r/mycontroller/2mqtt)
   * [Quay.io](https://quay.io/repository/mycontroller/2mqtt)
+#### Docker Run
+```bash
+podman run --detach --name 2mqtt \
+    --volume $PWD/config.yaml:/app/config.yaml \
+    --device /dev/ttyUSB0:/dev/ttyUSB0 \
+    --env  TZ="Asia/Kolkata" \
+    --restart unless-stopped \
+    docker.io/mycontroller/2mqtt:master
+```
+
 
 ### Executables
 * [Released versions](https://github.com/mycontroller-org/2mqtt/releases)

@@ -33,8 +33,8 @@ COPY --from=builder /app/2mqtt ${APP_HOME}/2mqtt
 RUN chmod +x ${APP_HOME}/2mqtt
 
 # copy default files
-COPY ./resources/sample-config.yaml ${APP_HOME}/cofig.yaml
+COPY ./resources/sample-config.yaml ${APP_HOME}/config.yaml
 
 WORKDIR ${APP_HOME}
 
-CMD ["/app/2mqtt", "-config", "/app/cofig.yaml"]
+CMD ["/app/2mqtt", "-config", "/app/config.yaml"]
