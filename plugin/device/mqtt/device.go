@@ -3,6 +3,7 @@ package mqtt
 import (
 	"crypto/tls"
 	"fmt"
+	"strings"
 	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
@@ -105,13 +106,13 @@ func (ep *Endpoint) Write(message *model.Message) error {
 		return nil
 	}
 	zap.L().Debug("about to send a message", zap.Any("message", message))
-	topics := message.Others.Get(model.KeyMqttTopic).([]string)
+	topic := message.Others.GetString(model.KeyMqttTopic)
 	qos := byte(ep.Config.QoS)
 
 	time.Sleep(ep.txPreDelay) // transmit pre delay
 
-	for _, t := range topics {
-		_topic := fmt.Sprintf("%s/%s", ep.Config.Publish, t)
+	for _, rawtopic := range strings.Split(ep.Config.Publish, ",") {
+		_topic := fmt.Sprintf("%s/%s", strings.TrimSpace(rawtopic), topic)
 		token := ep.Client.Publish(_topic, qos, false, message.Data)
 		if token.Error() != nil {
 			return token.Error()
