@@ -13,10 +13,8 @@ import (
 
 // Constants in serial device
 const (
-	defaultMessageSplitter  = '\n'
 	MaxDataLength           = 1000
 	transmitPreDelayDefault = time.Millisecond * 1 // 1ms
-	reconnectDelayDefault   = time.Second * 10     // 10 seconds
 
 	KeyMessageSplitter = "message_splitter"
 )
