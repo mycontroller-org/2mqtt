@@ -18,8 +18,8 @@ adapters:
       insecure_skip_verify: false
       username: 
       password: 
-      subscribe: out_rfm69/#
-      publish: in_rfm69
+      subscribe: in_rfm69/#
+      publish: out_rfm69
       qos: 0
       transmit_pre_delay: 0s
       reconnect_delay: 5s
@@ -38,8 +38,8 @@ adapters:
       insecure_skip_verify: false
       username: 
       password: 
-      subscribe: out_nrf24/#
-      publish: in_nrf24
+      subscribe: in_nrf24/#
+      publish: out_nrf24
       qos: 0
       transmit_pre_delay: 0s
       reconnect_delay: 5s

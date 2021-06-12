@@ -32,8 +32,8 @@ adapters:   # you can have more than one adapter
       insecure_skip_verify: false       # enable/disable insecure on tls connection
       username:                         # username of the broker
       password:                         # password of the broker
-      subscribe: out_rfm69/#            # subscribe a topic, should include `#` at the end
-      publish: in_rfm69                 # publish on this topic, can add many topics with comma
+      subscribe: in_rfm69/#             # subscribe a topic, should include `#` at the end, your controller to serial port(source)
+      publish: out_rfm69                # publish on this topic, can add many topics with comma, serial to your controller
       qos: 0                            # qos number: 0, 1, 2
       transmit_pre_delay: 0s
       reconnect_delay: 5s

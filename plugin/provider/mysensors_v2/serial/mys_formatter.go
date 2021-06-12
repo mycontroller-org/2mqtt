@@ -56,7 +56,7 @@ func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message
 		return nil, errors.New("invalid message format")
 	}
 	topic := strings.Join(dataSlice[:5], "/")
-	payload := dataSlice[6]
+	payload := dataSlice[5]
 
 	formattedMessage := model.NewMessage([]byte(payload))
 	formattedMessage.Timestamp = sourceMessage.Timestamp
