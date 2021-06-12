@@ -1,0 +1,7 @@
+# ignore configurations files other than the template(config.yaml)
+/resources/*
+!/resources/sample*.yaml
+!/resources/ctl.sh
+!/resources/README.txt
+binaries/*
+builds/*

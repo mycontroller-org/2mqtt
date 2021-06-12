@@ -1,0 +1,45 @@
+logger:
+  mode: development
+  encoding: console
+  level: info
+
+adapters:
+  - name: adapter1
+    enabled: false
+    reconnect_delay: 20s
+    provider: mysensors_v2
+    source:
+      type: serial
+      port: /dev/ttyUSB0
+      baud_rate: 115200
+      transmit_pre_delay: 10ms
+    mqtt:
+      broker: tcp://192.168.10.21:1883
+      insecure_skip_verify: false
+      username: 
+      password: 
+      subscribe: out_rfm69/#
+      publish: in_rfm69
+      qos: 0
+      transmit_pre_delay: 0s
+      reconnect_delay: 5s
+
+  - name: adapter2
+    enabled: false
+    reconnect_delay: 20s
+    provider: mysensors_v2
+    source:
+      type: serial
+      port: /dev/ttyUSB1
+      baud_rate: 115200
+      transmit_pre_delay: 10ms
+    mqtt:
+      broker: tcp://192.168.10.21:1883
+      insecure_skip_verify: false
+      username: 
+      password: 
+      subscribe: out_nrf24/#
+      publish: in_nrf24
+      qos: 0
+      transmit_pre_delay: 0s
+      reconnect_delay: 5s
