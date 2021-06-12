@@ -23,7 +23,7 @@ func StartServices() {
 	// start adapter services
 	adapterSVC.Start(cfg.CFG.Adapters)
 
-	zap.L().Debug("start services completed", zap.String("timeTaken", time.Since(start).String()))
+	zap.L().Info("services started", zap.String("timeTaken", time.Since(start).String()))
 
 	handleShutdownSignal()
 }

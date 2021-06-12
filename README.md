@@ -47,7 +47,7 @@ Both released and master branch container images are published in to the followi
   * [Quay.io](https://quay.io/repository/mycontroller/2mqtt)
 #### Docker Run
 ```bash
-podman run --detach --name 2mqtt \
+docker run --detach --name 2mqtt \
     --volume $PWD/config.yaml:/app/config.yaml \
     --device /dev/ttyUSB0:/dev/ttyUSB0 \
     --env  TZ="Asia/Kolkata" \
