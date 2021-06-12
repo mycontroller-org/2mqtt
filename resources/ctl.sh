@@ -18,7 +18,7 @@ ACTUAL_LOCATION=`dirname $0`
 cd ${ACTUAL_LOCATION}
 
 BINARY_FILE=./2mqtt
-CONFIG_FILE=./cofig.yaml
+CONFIG_FILE=./config.yaml
 
 START_COMMAND="${BINARY_FILE} -config ${CONFIG_FILE}"
 

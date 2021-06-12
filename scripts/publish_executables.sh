@@ -30,7 +30,7 @@ function package {
   cp ${BUILD_DIR}/${BINARY_DIR}/${BINARY_FILE} ${PACKAGE_STAGING_DIR}/2mqtt${FILE_EXTENSION}
 
   # copy sample config file
-  cp resources/sample-config.yaml ${PACKAGE_STAGING_DIR}/cofig.yaml
+  cp resources/sample-config.yaml ${PACKAGE_STAGING_DIR}/config.yaml
   # copy start/stop script
   cp resources/ctl.sh ${PACKAGE_STAGING_DIR}/ctl.sh
   # copy readme text
