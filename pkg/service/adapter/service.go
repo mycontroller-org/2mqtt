@@ -143,8 +143,11 @@ func (s *Service) sourceMessageProcessor() {
 }
 
 func (s *Service) onMqttMessage(message *model.Message) {
-	data, _ := message.Data.([]byte)
-	zap.L().Debug("received a mqtt message", zap.Any("message", message), zap.ByteString("data", data))
+	data := ""
+	if len(message.Data) > 0 {
+		data = string(message.Data)
+	}
+	zap.L().Debug("received a mqtt message", zap.Any("message", message), zap.String("data", data))
 	formattedMsg, err := s.formatter.ToSourceMessage(message)
 	if err != nil {
 		zap.L().Error("error on formatting to source type", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))

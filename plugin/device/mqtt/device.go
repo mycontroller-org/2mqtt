@@ -113,7 +113,7 @@ func (ep *Endpoint) Write(message *model.Message) error {
 
 	for _, rawtopic := range strings.Split(ep.Config.Publish, ",") {
 		_topic := fmt.Sprintf("%s/%s", strings.TrimSpace(rawtopic), topic)
-		token := ep.Client.Publish(_topic, qos, false, message.Data)
+		token := ep.Client.Publish(_topic, qos, false, string(message.Data))
 		if token.Error() != nil {
 			return token.Error()
 		}

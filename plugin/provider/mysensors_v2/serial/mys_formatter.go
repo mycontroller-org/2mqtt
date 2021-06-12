@@ -26,8 +26,8 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 	topicSlice = topicSlice[len(topicSlice)-5:]
 
 	payload := ""
-	if payloadBytes, ok := mqttMessage.Data.([]byte); ok {
-		payload = string(payloadBytes)
+	if len(mqttMessage.Data) > 0 {
+		payload = string(mqttMessage.Data)
 	}
 
 	topicSlice = append(topicSlice, payload)
@@ -35,7 +35,7 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 	finalData := strings.Join(topicSlice[:], ";")
 
 	formattedMessage := &model.Message{
-		Data:      fmt.Sprintf("%s%c", finalData, MessageSplitter),
+		Data:      []byte(fmt.Sprintf("%s%c", finalData, MessageSplitter)),
 		Others:    mqttMessage.Others,
 		Timestamp: mqttMessage.Timestamp,
 	}
@@ -45,10 +45,8 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message, error) {
 	// structure: node-id/child-sensor-id/command/ack/type payload
 	data := ""
-	if sourceMessage.Data != nil {
-		if byteData, ok := sourceMessage.Data.([]byte); ok {
-			data = string(byteData)
-		}
+	if len(sourceMessage.Data) > 0 {
+		data = string(sourceMessage.Data)
 	}
 	dataSlice := strings.Split(data, ";")
 	if len(dataSlice) != 6 {
