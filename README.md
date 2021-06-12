@@ -1,1 +1,51 @@
 # 2mqtt
+![lint workflow](https://github.com/mycontroller-org/2mqtt/actions/workflows/lint.yaml/badge.svg)
+![publish container images](https://github.com/mycontroller-org/2mqtt/actions/workflows/publish_container_images.yaml/badge.svg)
+![publish executables](https://github.com/mycontroller-org/2mqtt/actions/workflows/publish_executables.yaml/badge.svg)
+
+2mqtt is an adapter server to convert from any device to MQTT.
+
+### Supported Providers
+* [MySensors](https://www.mysensors.org/)
+  * `serial` to `MQTT`
+
+## Documentation
+You can have more than one adapter configurations
+```yaml
+logger:
+  mode: development   # logger mode: development, production
+  encoding: console   # encoding options: console, json
+  level: info         # log levels: debug, info, warn, error, fatal
+
+adapters:   # you can have more than one adapter
+  - name: adapter1          # name of the adapter
+    enabled: false          # enable or disable the adapter, default disabled
+    reconnect_delay: 20s    # reconnect automatically, if there is a failure on the connection
+    provider: mysensors_v2  # provider type
+    source: # source is the device, to be converted to MQTT
+      type: serial              # source device type: serial
+      port: /dev/ttyUSB0        # serial port
+      baud_rate: 115200         # serial baud rate
+      transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source device
+    mqtt: # mqtt broker details
+      broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
+      insecure_skip_verify: false       # enable/disable insecure on tls connection
+      username:                         # username of the broker
+      password:                         # password of the broker
+      subscribe: out_rfm69/#            # subscribe a topic, should include `#` at the end
+      publish: in_rfm69                 # publish on this topic, can add many topics with comma
+      qos: 0                            # qos number: 0, 1, 2
+      transmit_pre_delay: 0s
+      reconnect_delay: 5s
+```
+
+## Download
+### Container images
+`master` branch images are tagged as `:master`<br>
+Both released and master branch container images are published in to the following registries,
+  * [Docker Hub](https://hub.docker.com/r/mycontroller/2mqtt)
+  * [Quay.io](https://quay.io/repository/mycontroller/2mqtt)
+
+### Executables
+* [Released versions](https://github.com/mycontroller-org/2mqtt/releases)
+* [Pre Release](https://download.mycontroller.org/2mqtt/master/) - `master` branch executables

@@ -28,7 +28,7 @@ jobs:
       - name: build bundles
         run: ./scripts/publish_executables.sh
 
-      - name: build bundles
+      - name: add timestamp file
         run: |
           echo `date -u +'%Y%m%d%H%M%S'` > builds/timestamp.txt  
           echo `date -u +'%Y-%m-%dT%H:%M:%S%:z'` >> builds/timestamp.txt
@@ -46,7 +46,7 @@ jobs:
           rm: true
           strip_components: 1
 
-      - name: Update release notes and executables
+      - name: update release notes and executables
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/') # executes only for new release
         env:
