@@ -142,7 +142,6 @@ func (ep *Endpoint) dataListener() {
 					copy(dataCloned, data)
 					data = nil // reset local buffer
 					rawMsg := model.NewMessage(dataCloned)
-					//	zap.L().Debug("new message received", zap.Any("rawMessage", rawMsg))
 					ep.receiveMsgFunc(rawMsg)
 				} else {
 					data = append(data, b)

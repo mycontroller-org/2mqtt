@@ -105,7 +105,7 @@ func (ep *Endpoint) Write(message *model.Message) error {
 	if message == nil {
 		return nil
 	}
-	zap.L().Debug("about to send a message", zap.Any("message", message))
+	zap.L().Debug("about to send a message", zap.String("message", message.ToString()))
 	topic := message.Others.GetString(model.KeyMqttTopic)
 	qos := byte(ep.Config.QoS)
 

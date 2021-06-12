@@ -131,7 +131,7 @@ func (s *Service) sourceMessageProcessor() {
 		case <-ticker.C:
 			if s.statusSource.Status == model.StatusUP {
 				if message := s.sourceMessageQueue.Get(); message != nil {
-					zap.L().Debug("posting a message to source device", zap.Any("message", message))
+					zap.L().Debug("posting a message to source device", zap.String("message", message.ToString()))
 					err := s.sourceDevice.Write(message)
 					if err != nil {
 						zap.L().Error("error on writing a message to source device", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))
@@ -143,11 +143,7 @@ func (s *Service) sourceMessageProcessor() {
 }
 
 func (s *Service) onMqttMessage(message *model.Message) {
-	data := ""
-	if len(message.Data) > 0 {
-		data = string(message.Data)
-	}
-	zap.L().Debug("received a mqtt message", zap.Any("message", message), zap.String("data", data))
+	zap.L().Debug("received a mqtt message", zap.String("message", message.ToString()))
 	formattedMsg, err := s.formatter.ToSourceMessage(message)
 	if err != nil {
 		zap.L().Error("error on formatting to source type", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))
@@ -157,7 +153,7 @@ func (s *Service) onMqttMessage(message *model.Message) {
 }
 
 func (s *Service) onSourceMessage(message *model.Message) {
-	zap.L().Debug("received a message from source device", zap.Any("message", message))
+	zap.L().Debug("received a message from source device", zap.String("message", message.ToString()))
 	formattedMsg, err := s.formatter.ToMQTTMessage(message)
 	if err != nil {
 		zap.L().Error("error on formatting to mqtt", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))
