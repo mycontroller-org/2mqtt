@@ -74,15 +74,11 @@ func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), stat
 }
 
 func (ep *Endpoint) Write(message *model.Message) error {
-	if message == nil {
+	if message == nil && len(message.Data) > 0 {
 		return nil
 	}
 	time.Sleep(ep.txPreDelay) // transmit pre delay
-	bytes, err := utils.StructToByte(message.Data)
-	if err != nil {
-		return err
-	}
-	_, err = ep.Port.Write(bytes)
+	_, err := ep.Port.Write(message.Data)
 	if err != nil {
 		ep.statusFunc(&model.State{
 			Status:  model.StatusError,
