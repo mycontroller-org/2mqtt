@@ -46,8 +46,8 @@ func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message
 	// structure: node-id/child-sensor-id/command/ack/type payload
 	data := ""
 	if sourceMessage.Data != nil {
-		if stringData, ok := sourceMessage.Data.(string); ok {
-			data = stringData
+		if byteData, ok := sourceMessage.Data.([]byte); ok {
+			data = string(byteData)
 		}
 	}
 	dataSlice := strings.Split(data, ";")
