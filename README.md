@@ -60,7 +60,7 @@ adapters:   # you can have more than one adapter
       transmit_pre_delay: 0s
       reconnect_delay: 5s
 ```
-### Source configurations
+### Source device configuration
 Based on the source type the configurations will be different.
 #### Serial
 ```yaml
