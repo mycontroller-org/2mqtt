@@ -1,4 +1,4 @@
-package serial
+package mysensors
 
 import (
 	"errors"
@@ -16,7 +16,7 @@ const (
 type SourceType string
 
 func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message, error) {
-	// node-id;child-sensor-id;command;ack;type;payload/n
+	// node-id;child-sensor-id;command;ack;type;payload\n
 	topic := mqttMessage.Others.GetString(model.KeyMqttTopic)
 	topicSlice := strings.Split(topic, "/")
 	if len(topicSlice) < 5 {

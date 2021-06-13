@@ -29,9 +29,8 @@ adapters:
     reconnect_delay: 20s
     provider: mysensors_v2
     source:
-      type: serial
-      port: /dev/ttyUSB1
-      baud_rate: 115200
+      type: ethernet
+      server: tcp://192.168.10.21:5003
       transmit_pre_delay: 10ms
     mqtt:
       broker: tcp://192.168.10.21:1883

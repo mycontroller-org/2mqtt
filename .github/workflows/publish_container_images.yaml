@@ -24,7 +24,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: backend repository
+      - name: checkout the source code
         uses: actions/checkout@v2
 
       - uses: docker/setup-buildx-action@v1
@@ -37,5 +37,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
 
-      - name: Build container and publish
+      - name: Build and publish container images
         run: ./scripts/publish_container_images.sh

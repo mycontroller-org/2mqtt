@@ -5,6 +5,7 @@ import (
 
 	"github.com/mycontroller-org/2mqtt/pkg/model"
 	config "github.com/mycontroller-org/2mqtt/pkg/model/config"
+	ethernet "github.com/mycontroller-org/2mqtt/plugin/device/ethernet"
 	mqtt "github.com/mycontroller-org/2mqtt/plugin/device/mqtt"
 	serial "github.com/mycontroller-org/2mqtt/plugin/device/serial"
 )
@@ -15,6 +16,9 @@ func GetSourceDevice(adapterCfg *config.AdapterConfig, rxFunc func(msg *model.Me
 	switch deviceType {
 	case model.DeviceSerial:
 		return serial.New(adapterCfg.Name, adapterCfg.Source, rxFunc, statusFunc)
+
+	case model.DeviceEthernet:
+		return ethernet.New(adapterCfg.Name, adapterCfg.Source, rxFunc, statusFunc)
 
 	}
 	return nil, fmt.Errorf("unsupported source device:%s", deviceType)

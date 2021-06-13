@@ -3,41 +3,12 @@
 ![publish container images](https://github.com/mycontroller-org/2mqtt/actions/workflows/publish_container_images.yaml/badge.svg)
 ![publish executables](https://github.com/mycontroller-org/2mqtt/actions/workflows/publish_executables.yaml/badge.svg)
 
-2mqtt is an adapter server to convert from any device to MQTT.
+2mqtt is MQTT bridge. You can convert the serial, ethernet to MQTT
 
 ### Supported Providers
 * [MySensors](https://www.mysensors.org/)
   * `serial` to `MQTT`
-
-## Documentation
-You can have more than one adapter configurations
-```yaml
-logger:
-  mode: development   # logger mode: development, production
-  encoding: console   # encoding options: console, json
-  level: info         # log levels: debug, info, warn, error, fatal
-
-adapters:   # you can have more than one adapter
-  - name: adapter1          # name of the adapter
-    enabled: false          # enable or disable the adapter, default disabled
-    reconnect_delay: 20s    # reconnect automatically, if there is a failure on the connection
-    provider: mysensors_v2  # provider type
-    source: # source is the device, to be converted to MQTT
-      type: serial              # source device type: serial
-      port: /dev/ttyUSB0        # serial port
-      baud_rate: 115200         # serial baud rate
-      transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source device
-    mqtt: # mqtt broker details
-      broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
-      insecure_skip_verify: false       # enable/disable insecure on tls connection
-      username:                         # username of the broker
-      password:                         # password of the broker
-      subscribe: in_rfm69/#             # subscribe a topic, should include `#` at the end, your controller to serial port(source)
-      publish: out_rfm69                # publish on this topic, can add many topics with comma, serial to your controller
-      qos: 0                            # qos number: 0, 1, 2
-      transmit_pre_delay: 0s
-      reconnect_delay: 5s
-```
+  * `ethernet` to `MQTT`
 
 ## Download
 ### Container images
@@ -55,7 +26,54 @@ docker run --detach --name 2mqtt \
     docker.io/mycontroller/2mqtt:master
 ```
 
-
 ### Executables
 * [Released versions](https://github.com/mycontroller-org/2mqtt/releases)
 * [Pre Release](https://download.mycontroller.org/2mqtt/master/) - `master` branch executables
+
+
+## Configuration
+You can have more than one adapter configurations
+```yaml
+logger:
+  mode: development   # logger mode: development, production
+  encoding: console   # encoding options: console, json
+  level: info         # log levels: debug, info, warn, error, fatal
+
+adapters:   # you can have more than one adapter
+  - name: adapter1          # name of the adapter
+    enabled: false          # enable or disable the adapter, default disabled
+    reconnect_delay: 20s    # reconnect automatically, if there is a failure on the connection
+    provider: mysensors_v2  # provider type
+    source: # source is the device, to be converted to MQTT, based on the type, configurations will be different
+      type: serial              # source device type: serial
+      port: /dev/ttyUSB0        # serial port
+      baud_rate: 115200         # serial baud rate
+      transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
+    mqtt: # mqtt broker details
+      broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
+      insecure_skip_verify: false       # enable/disable insecure on tls connection
+      username:                         # username of the broker
+      password:                         # password of the broker
+      subscribe: in_rfm69/#             # subscribe a topic, should include `#` at the end, your controller to serial port(source)
+      publish: out_rfm69                # publish on this topic, can add many topics with comma, serial to your controller
+      qos: 0                            # qos number: 0, 1, 2
+      transmit_pre_delay: 0s
+      reconnect_delay: 5s
+```
+### Source configurations
+Based on the source type the configurations will be different.
+#### Serial
+```yaml
+source:
+  type: serial              # source device type
+  port: /dev/ttyUSB0        # serial port
+  baud_rate: 115200         # serial baud rate
+  transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
+```
+#### Ethernet
+```yaml
+source:
+  type: ethernet                    # source device type
+  server: tcp://192.168.10.21:5003  # ethernet server address with port
+  transmit_pre_delay: 10ms          # waits and sends a message, to avoid collision on the source network
+```

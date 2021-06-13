@@ -1,28 +1,26 @@
-package serial
+package ethernet
 
 import (
+	"net"
+	"net/url"
 	"time"
 
 	"github.com/mycontroller-org/2mqtt/pkg/model"
 	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
 	"github.com/mycontroller-org/backend/v2/pkg/utils"
 	"github.com/mycontroller-org/backend/v2/pkg/utils/concurrency"
-	ser "github.com/tarm/serial"
 	"go.uber.org/zap"
 )
 
-// Constants in serial device
+// Constants in ethernet protocol
 const (
 	MaxDataLength           = 1000
-	transmitPreDelayDefault = time.Millisecond * 1 // 1ms
-
-	KeyMessageSplitter = "message_splitter"
+	transmitPreDelayDefault = time.Microsecond * 1 // 1 microsecond
 )
 
 // Config details
 type Config struct {
-	Port             string `yaml:"port"`
-	BaudRate         int    `yaml:"baud_rate"`
+	Server           string `yaml:"server"`
 	MessageSplitter  byte   `yaml:"message_splitter"`
 	TransmitPreDelay string `yaml:"transmit_pre_delay"`
 }
@@ -30,16 +28,16 @@ type Config struct {
 // Endpoint data
 type Endpoint struct {
 	ID             string
-	Config         *Config
-	serCfg         *ser.Config
-	Port           *ser.Port
+	Config         Config
+	connUrl        *url.URL
+	conn           net.Conn
 	receiveMsgFunc func(rm *model.Message)
 	statusFunc     func(state *model.State)
 	safeClose      *concurrency.Channel
 	txPreDelay     time.Duration
 }
 
-// New serial client
+// New ethernet driver
 func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (*Endpoint, error) {
 	var cfg Config
 	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
@@ -48,60 +46,51 @@ func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), stat
 	}
 	zap.L().Debug("generated config", zap.Any("config", cfg))
 
-	serCfg := &ser.Config{Name: cfg.Port, Baud: cfg.BaudRate}
+	serverURL, err := url.Parse(cfg.Server)
+	if err != nil {
+		return nil, err
+	}
 
-	zap.L().Info("opening a serial port", zap.String("adapterName", ID), zap.String("port", cfg.Port))
-	port, err := ser.OpenPort(serCfg)
+	conn, err := net.Dial(serverURL.Scheme, serverURL.Host)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := &Endpoint{
 		ID:             ID,
-		Config:         &cfg,
-		serCfg:         serCfg,
+		Config:         cfg,
+		connUrl:        serverURL,
+		conn:           conn,
 		receiveMsgFunc: rxFunc,
 		statusFunc:     statusFunc,
-		Port:           port,
 		safeClose:      concurrency.NewChannel(0),
 		txPreDelay:     utils.ToDuration(cfg.TransmitPreDelay, transmitPreDelayDefault),
 	}
 
 	// start serail read listener
 	go endpoint.dataListener()
-
 	return endpoint, nil
 }
 
 func (ep *Endpoint) Write(message *model.Message) error {
-	if message == nil && len(message.Data) > 0 {
+	if message == nil || len(message.Data) == 0 {
 		return nil
 	}
 	time.Sleep(ep.txPreDelay) // transmit pre delay
-	_, err := ep.Port.Write(message.Data)
-	if err != nil {
-		ep.statusFunc(&model.State{
-			Status:  model.StatusError,
-			Message: err.Error(),
-			Since:   time.Now(),
-		})
-	}
+	_, err := ep.conn.Write(message.Data)
 	return err
 }
 
-// Close the driver
+// Close the connection
 func (ep *Endpoint) Close() error {
 	go func() { ep.safeClose.SafeSend(true) }() // terminate the data listener
 
-	if ep.Port != nil {
-		if err := ep.Port.Flush(); err != nil {
-			zap.L().Error("error on flushing into serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
-		}
-		err := ep.Port.Close()
+	if ep.conn != nil {
+		err := ep.conn.Close()
 		if err != nil {
-			zap.L().Error("error on closing the serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
+			zap.L().Error("error on closing a connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
 		}
-		return err
+		ep.conn = nil
 	}
 	return nil
 }
@@ -113,23 +102,21 @@ func (ep *Endpoint) dataListener() {
 	for {
 		select {
 		case <-ep.safeClose.CH:
-			zap.L().Info("received a close signal.", zap.String("id", ep.ID), zap.String("port", ep.serCfg.Name))
+			zap.L().Info("received close signal", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server))
 			return
 		default:
-			rxLength, err := ep.Port.Read(readBuf)
+			rxLength, err := ep.conn.Read(readBuf)
 			if err != nil {
-				zap.L().Error("error on reading data from a serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
-				// notify failed
-				if err != nil {
-					ep.statusFunc(&model.State{
-						Status:  model.StatusError,
-						Message: err.Error(),
-						Since:   time.Now(),
-					})
+				zap.L().Error("error on reading data from a ethernet connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
+				state := &model.State{
+					Status:  model.StatusError,
+					Message: err.Error(),
+					Since:   time.Now(),
 				}
+				ep.statusFunc(state)
 				return
 			}
-			//zap.L().Debug("data", zap.Any("data", string(data)))
+
 			for index := 0; index < rxLength; index++ {
 				b := readBuf[index]
 				if b == ep.Config.MessageSplitter {
@@ -137,8 +124,8 @@ func (ep *Endpoint) dataListener() {
 					dataCloned := make([]byte, len(data))
 					copy(dataCloned, data)
 					data = nil // reset local buffer
-					rawMsg := model.NewMessage(dataCloned)
-					ep.receiveMsgFunc(rawMsg)
+					message := model.NewMessage(dataCloned)
+					ep.receiveMsgFunc(message)
 				} else {
 					data = append(data, b)
 				}
