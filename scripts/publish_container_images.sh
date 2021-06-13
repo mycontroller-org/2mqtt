@@ -6,7 +6,7 @@ source ./scripts/version.sh
 REGISTRY='quay.io/mycontroller'
 ALT_REGISTRY='docker.io/mycontroller'
 IMAGE_NAME="2mqtt"
-PLATFORMS="linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64"
+PLATFORMS="linux/arm/v6,linux/arm/v7,linux/arm64,linux/amd64,linux/386"
 IMAGE_TAG=${VERSION}
 
 # debug lines
