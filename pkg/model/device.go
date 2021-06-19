@@ -2,6 +2,7 @@ package model
 
 const (
 	ProviderMySensorsV2 = "mysensors_v2"
+	ProviderRaw         = "raw"
 )
 
 // Formatter interface, used to convert the data

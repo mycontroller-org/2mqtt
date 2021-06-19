@@ -1,4 +1,4 @@
-package mysensors
+package raw
 
 import (
 	"fmt"
@@ -12,7 +12,6 @@ func Get(adapterCfg *config.AdapterConfig) (model.Formatter, error) {
 
 	switch sourceType {
 	case model.DeviceSerial, model.DeviceEthernet:
-		adapterCfg.Source.Set(model.KeyMessageSplitter, MessageSplitter, nil)
 		return SourceType(adapterCfg.Name), nil
 
 	default:

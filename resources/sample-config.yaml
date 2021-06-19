@@ -42,3 +42,24 @@ adapters:
       qos: 0
       transmit_pre_delay: 0s
       reconnect_delay: 5s
+
+  - name: adapter3
+    enabled: false
+    reconnect_delay: 20s
+    provider: raw
+    source:
+      type: serial
+      port: /dev/ttyUSB0
+      baud_rate: 115200
+      transmit_pre_delay: 10ms
+      message_splitter: 10
+    mqtt:
+      broker: tcp://192.168.10.21:1883
+      insecure_skip_verify: false
+      username: 
+      password: 
+      subscribe: in/my_topic
+      publish: out/my_topic
+      qos: 0
+      transmit_pre_delay: 0s
+      reconnect_delay: 5s

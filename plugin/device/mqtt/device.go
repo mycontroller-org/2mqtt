@@ -112,7 +112,10 @@ func (ep *Endpoint) Write(message *model.Message) error {
 	time.Sleep(ep.txPreDelay) // transmit pre delay
 
 	for _, rawtopic := range strings.Split(ep.Config.Publish, ",") {
-		_topic := fmt.Sprintf("%s/%s", strings.TrimSpace(rawtopic), topic)
+		_topic := strings.TrimSpace(rawtopic)
+		if topic != "" {
+			_topic = fmt.Sprintf("%s/%s", _topic, topic)
+		}
 		token := ep.Client.Publish(_topic, qos, false, string(message.Data))
 		if token.Error() != nil {
 			return token.Error()

@@ -9,6 +9,9 @@
 * [MySensors](https://www.mysensors.org/)
   * `serial` to `MQTT`
   * `ethernet` to `MQTT`
+* `raw` - sends the serial,ethernet messages to mqtt as is
+  * `serial` to `MQTT`
+  * `ethernet` to `MQTT`
 
 ## Download
 ### Container images
@@ -33,6 +36,8 @@ docker run --detach --name 2mqtt \
 
 ## Configuration
 You can have more than one adapter configurations
+
+Provider options: `mysensors_v2` and `raw`
 ```yaml
 logger:
   mode: development   # logger mode: development, production
@@ -43,7 +48,7 @@ adapters:   # you can have more than one adapter
   - name: adapter1          # name of the adapter
     enabled: false          # enable or disable the adapter, default disabled
     reconnect_delay: 20s    # reconnect automatically, if there is a failure on the connection
-    provider: mysensors_v2  # provider type
+    provider: mysensors_v2  # provider type, options: mysensors_v2, raw
     source: # source is the device, to be converted to MQTT, based on the type, configurations will be different
       type: serial              # source device type: serial
       port: /dev/ttyUSB0        # serial port
@@ -69,6 +74,7 @@ source:
   port: /dev/ttyUSB0        # serial port
   baud_rate: 115200         # serial baud rate
   transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
+  message_splitter: # message splitter byte, default '10'
 ```
 #### Ethernet
 ```yaml
@@ -76,4 +82,19 @@ source:
   type: ethernet                    # source device type
   server: tcp://192.168.10.21:5003  # ethernet server address with port
   transmit_pre_delay: 10ms          # waits and sends a message, to avoid collision on the source network
+  message_splitter: # message splitter byte, default '10'
 ```
+
+### Special note on message_splitter
+* `message_splitter` is a reference char to understand the end of message on serial and ethernet device read<br>
+* This special char will be included while writing to the device.
+* supports only one char, should be supplied in byte, ie:`0` to `255`, extended ASCII chars
+
+#### Quick references
+For complete details refer the extended ASCII table 
+* `0` - Null char
+* `3` - End of Text
+* `4` - End of Transmission
+* `8` - Back Space
+* `10` - Line Feed
+* `13` - Carriage Return

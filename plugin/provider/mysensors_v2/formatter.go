@@ -2,7 +2,6 @@ package mysensors
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/mycontroller-org/2mqtt/pkg/model"
@@ -35,7 +34,7 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 	finalData := strings.Join(topicSlice[:], ";")
 
 	formattedMessage := &model.Message{
-		Data:      []byte(fmt.Sprintf("%s%c", finalData, MessageSplitter)),
+		Data:      []byte(finalData),
 		Others:    mqttMessage.Others,
 		Timestamp: mqttMessage.Timestamp,
 	}

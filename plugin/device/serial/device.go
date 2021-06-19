@@ -16,14 +16,14 @@ const (
 	MaxDataLength           = 1000
 	transmitPreDelayDefault = time.Millisecond * 1 // 1ms
 
-	KeyMessageSplitter = "message_splitter"
+	DefaultMessageSplitter = '\n'
 )
 
 // Config details
 type Config struct {
 	Port             string `yaml:"port"`
 	BaudRate         int    `yaml:"baud_rate"`
-	MessageSplitter  byte   `yaml:"message_splitter"`
+	MessageSplitter  *byte  `yaml:"message_splitter"`
 	TransmitPreDelay string `yaml:"transmit_pre_delay"`
 }
 
@@ -46,6 +46,12 @@ func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), stat
 	if err != nil {
 		return nil, err
 	}
+
+	if cfg.MessageSplitter == nil {
+		splitter := byte(DefaultMessageSplitter)
+		cfg.MessageSplitter = &splitter
+	}
+
 	zap.L().Debug("generated config", zap.Any("config", cfg))
 
 	serCfg := &ser.Config{Name: cfg.Port, Baud: cfg.BaudRate}
@@ -78,7 +84,7 @@ func (ep *Endpoint) Write(message *model.Message) error {
 		return nil
 	}
 	time.Sleep(ep.txPreDelay) // transmit pre delay
-	_, err := ep.Port.Write(message.Data)
+	_, err := ep.Port.Write(append(message.Data, *ep.Config.MessageSplitter))
 	if err != nil {
 		ep.statusFunc(&model.State{
 			Status:  model.StatusError,
@@ -132,7 +138,7 @@ func (ep *Endpoint) dataListener() {
 			//zap.L().Debug("data", zap.Any("data", string(data)))
 			for index := 0; index < rxLength; index++ {
 				b := readBuf[index]
-				if b == ep.Config.MessageSplitter {
+				if b == *ep.Config.MessageSplitter {
 					// copy the received data
 					dataCloned := make([]byte, len(data))
 					copy(dataCloned, data)

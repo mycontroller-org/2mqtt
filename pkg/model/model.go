@@ -11,9 +11,10 @@ const (
 	DeviceMQTT     = "mqtt"
 
 	// keys used across
-	KeyType      = "type"
-	KeyMqttTopic = "mqtt_topic"
-	KeyMqttQoS   = "mqtt_qos"
+	KeyType            = "type"
+	KeyMqttTopic       = "mqtt_topic"
+	KeyMqttQoS         = "mqtt_qos"
+	KeyMessageSplitter = "message_splitter"
 
 	// Status
 	StatusUP    = "up"
