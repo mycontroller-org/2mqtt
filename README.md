@@ -29,9 +29,9 @@ docker run --detach --name 2mqtt \
     docker.io/mycontroller/2mqtt:master
 ```
 
-### Executables
+### Download Executables
 * [Released versions](https://github.com/mycontroller-org/2mqtt/releases)
-* [Pre Release](https://download.mycontroller.org/2mqtt/master/) - `master` branch executables
+* [Pre Release](https://github.com/mycontroller-org/2mqtt/releases/tag/master) - `master` branch executables
 
 
 ## Configuration
