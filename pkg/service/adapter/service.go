@@ -22,6 +22,8 @@ const (
 	DefaultReconnectDelay = "30s"
 
 	MqttDeviceName = "mqtt"
+
+	defaultMessageProcessTick = 1 * time.Second
 )
 
 // Service component of the provider
@@ -101,7 +103,7 @@ func (s *Service) Stop() {
 }
 
 func (s *Service) mqttMessageProcessor() {
-	ticker := time.NewTicker(10 * time.Microsecond)
+	ticker := time.NewTicker(defaultMessageProcessTick)
 	defer ticker.Stop()
 
 	for {
@@ -109,13 +111,19 @@ func (s *Service) mqttMessageProcessor() {
 		case <-s.terminateMqttChan.CH:
 			return
 		case <-ticker.C:
-			if s.statusMqtt.Status == model.StatusUP {
-				if message := s.mqttMessageQueue.Get(); message != nil {
+			for {
+				if s.statusMqtt.Status == model.StatusUP {
+					message := s.mqttMessageQueue.Get()
+					if message == nil {
+						break
+					}
 					message.Others.Set(model.KeyMqttQoS, int(s.adapterConfig.MQTT.GetInt64(model.KeyMqttQoS)), nil)
 					err := s.mqttDevice.Write(message)
 					if err != nil {
 						zap.L().Error("error on writing a message to mqtt", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))
 					}
+				} else {
+					break
 				}
 			}
 		}
@@ -123,7 +131,7 @@ func (s *Service) mqttMessageProcessor() {
 }
 
 func (s *Service) sourceMessageProcessor() {
-	ticker := time.NewTicker(10 * time.Microsecond)
+	ticker := time.NewTicker(defaultMessageProcessTick)
 	defer ticker.Stop()
 
 	for {
@@ -131,13 +139,19 @@ func (s *Service) sourceMessageProcessor() {
 		case <-s.terminateSourceChan.CH:
 			return
 		case <-ticker.C:
-			if s.statusSource.Status == model.StatusUP {
-				if message := s.sourceMessageQueue.Get(); message != nil {
+			for {
+				if s.statusSource.Status == model.StatusUP {
+					message := s.sourceMessageQueue.Get()
+					if message == nil {
+						break
+					}
 					zap.L().Debug("posting a message to source device", zap.String("message", message.ToString()))
 					err := s.sourceDevice.Write(message)
 					if err != nil {
 						zap.L().Error("error on writing a message to source device", zap.Error(err), zap.String("adapterName", s.adapterConfig.Name))
 					}
+				} else {
+					break
 				}
 			}
 		}
