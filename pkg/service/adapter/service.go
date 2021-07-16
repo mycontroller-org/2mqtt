@@ -245,7 +245,7 @@ func (s *Service) reconnectSourceDevice() {
 		}
 	}
 
-	sourceDevice, err := devicePlugin.Create(s.adapterConfig.Source.GetString(model.KeyType), s.adapterConfig.Name, s.adapterConfig.MQTT, s.onSourceMessage, s.onSourceStatus)
+	sourceDevice, err := devicePlugin.Create(s.adapterConfig.Source.GetString(model.KeyType), s.adapterConfig.Name, s.adapterConfig.Source, s.onSourceMessage, s.onSourceStatus)
 	if err == nil {
 		s.sourceDevice = sourceDevice
 		// update status UP
