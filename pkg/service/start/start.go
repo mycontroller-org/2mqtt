@@ -9,6 +9,7 @@ import (
 	adapterSVC "github.com/mycontroller-org/2mqtt/pkg/service/adapter"
 	cfg "github.com/mycontroller-org/2mqtt/pkg/service/configuration"
 	sch "github.com/mycontroller-org/backend/v2/pkg/service/core_scheduler"
+	"github.com/pkg/profile"
 	"go.uber.org/zap"
 )
 
@@ -33,9 +34,14 @@ func handleShutdownSignal() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
+	// CPU profiling by default
+	stop := profile.Start(profile.NoShutdownHook, profile.ProfilePath("/tmp/2mqtt.pprof"))
+
 	// waiting for signal
 	sig := <-sigs
 	close(sigs)
+
+	stop.Stop()
 
 	zap.L().Info("shutdown initiated..", zap.Any("signal", sig))
 	triggerShutdown()

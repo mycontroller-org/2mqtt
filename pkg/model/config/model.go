@@ -22,18 +22,5 @@ type AdapterConfig struct {
 	ReconnectDelay string         `yaml:"reconnect_delay"`
 	Provider       string         `yaml:"provider"`
 	Source         cmap.CustomMap `yaml:"source"`
-	MQTT           MQTTConfig     `yaml:"mqtt"`
-}
-
-// MQTTConfig struct
-type MQTTConfig struct {
-	Broker             string `yaml:"broker"`
-	InsecureSkipVerify bool   `yaml:"insecure_skip_verify"`
-	Username           string `yaml:"username"`
-	Password           string `yaml:"password" json:"-"`
-	Subscribe          string `yaml:"subscribe"`
-	Publish            string `yaml:"publish"`
-	QoS                int    `yaml:"qos"`
-	TransmitPreDelay   string `yaml:"transmit_pre_delay"`
-	ReconnectDelay     string `yaml:"reconnect_delay"`
+	MQTT           cmap.CustomMap `yaml:"mqtt"`
 }

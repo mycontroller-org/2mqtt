@@ -8,7 +8,8 @@ import (
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 	"github.com/mycontroller-org/2mqtt/pkg/model"
-	config "github.com/mycontroller-org/2mqtt/pkg/model/config"
+	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
+	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
 	"github.com/mycontroller-org/backend/v2/pkg/utils"
 
 	"go.uber.org/zap"
@@ -16,30 +17,52 @@ import (
 
 // Constants in serial device
 const (
+	PluginMQTT = "mqtt"
+
 	transmitPreDelayDefault = time.Microsecond * 1 // 1 micro second
 	reconnectDelayDefault   = time.Second * 10     // 10 seconds
 )
 
+// Config struct
+type Config struct {
+	Name               string `yaml:"name"`
+	Broker             string `yaml:"broker"`
+	InsecureSkipVerify bool   `yaml:"insecure_skip_verify"`
+	Username           string `yaml:"username"`
+	Password           string `yaml:"password" json:"-"`
+	Subscribe          string `yaml:"subscribe"`
+	Publish            string `yaml:"publish"`
+	QoS                int    `yaml:"qos"`
+	TransmitPreDelay   string `yaml:"transmit_pre_delay"`
+	ReconnectDelay     string `yaml:"reconnect_delay"`
+}
+
 // Endpoint data
 type Endpoint struct {
 	ID             string
-	Config         *config.MQTTConfig
+	Config         *Config
 	receiveMsgFunc func(msg *model.Message)
 	statusFunc     func(state *model.State)
 	Client         paho.Client
 	txPreDelay     time.Duration
 }
 
-// New mqtt driver
-func New(ID string, cfg *config.MQTTConfig, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (*Endpoint, error) {
-	zap.L().Debug("mqtt config", zap.String("id", ID), zap.Any("config", cfg))
+// NewDevice mqtt driver
+func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (deviceType.Plugin, error) {
 
 	start := time.Now()
+
+	var cfg Config
+	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	zap.L().Debug("mqtt config", zap.String("id", ID), zap.Any("config", cfg))
 
 	// endpoint
 	endpoint := &Endpoint{
 		ID:             ID,
-		Config:         cfg,
+		Config:         &cfg,
 		receiveMsgFunc: rxFunc,
 		statusFunc:     statusFunc,
 		txPreDelay:     utils.ToDuration(cfg.TransmitPreDelay, transmitPreDelayDefault),
@@ -71,12 +94,16 @@ func New(ID string, cfg *config.MQTTConfig, rxFunc func(msg *model.Message), sta
 	// adding client
 	endpoint.Client = c
 
-	err := endpoint.Subscribe(cfg.Subscribe)
+	err = endpoint.Subscribe(cfg.Subscribe)
 	if err != nil {
 		zap.L().Error("error on subscribe a topic", zap.String("topic", cfg.Subscribe), zap.Error(err))
 	}
 	zap.L().Debug("mqtt client connected successfully", zap.String("timeTaken", time.Since(start).String()), zap.Any("clientConfig", cfg))
 	return endpoint, nil
+}
+
+func (ep *Endpoint) Name() string {
+	return PluginMQTT
 }
 
 func (ep *Endpoint) onConnectionHandler(c paho.Client) {

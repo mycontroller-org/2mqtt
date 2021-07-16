@@ -6,6 +6,10 @@ import (
 
 type SourceType string
 
+func (st SourceType) Name() string {
+	return PluginRaw
+}
+
 func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message, error) {
 	if len(mqttMessage.Data) == 0 {
 		return nil, nil

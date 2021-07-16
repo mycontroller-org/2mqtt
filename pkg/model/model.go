@@ -12,6 +12,7 @@ const (
 
 	// keys used across
 	KeyType            = "type"
+	KeyName            = "name"
 	KeyMqttTopic       = "mqtt_topic"
 	KeyMqttQoS         = "mqtt_qos"
 	KeyMessageSplitter = "message_splitter"

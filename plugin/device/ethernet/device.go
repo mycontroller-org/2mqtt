@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/mycontroller-org/2mqtt/pkg/model"
+	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
 	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
 	"github.com/mycontroller-org/backend/v2/pkg/utils"
 	"github.com/mycontroller-org/backend/v2/pkg/utils/concurrency"
@@ -14,6 +15,8 @@ import (
 
 // Constants in ethernet protocol
 const (
+	PluginEthernet = "ethernet"
+
 	MaxDataLength           = 1000
 	transmitPreDelayDefault = time.Microsecond * 1 // 1 microsecond
 
@@ -39,8 +42,8 @@ type Endpoint struct {
 	txPreDelay     time.Duration
 }
 
-// New ethernet driver
-func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (*Endpoint, error) {
+// NewDevice ethernet driver
+func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (deviceType.Plugin, error) {
 	var cfg Config
 	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
 	if err != nil {
@@ -78,6 +81,10 @@ func New(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), stat
 	// start serail read listener
 	go endpoint.dataListener()
 	return endpoint, nil
+}
+
+func (ep *Endpoint) Name() string {
+	return PluginEthernet
 }
 
 func (ep *Endpoint) Write(message *model.Message) error {

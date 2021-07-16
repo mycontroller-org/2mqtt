@@ -14,6 +14,10 @@ const (
 
 type SourceType string
 
+func (st SourceType) Name() string {
+	return PluginMySensors
+}
+
 func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message, error) {
 	// node-id;child-sensor-id;command;ack;type;payload\n
 	topic := mqttMessage.Others.GetString(model.KeyMqttTopic)

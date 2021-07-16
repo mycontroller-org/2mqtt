@@ -11,6 +11,7 @@ import (
 // Schedule adds a schedule
 func Schedule(schedulerID, interval string, triggerFunc func()) error {
 	Unschedule(schedulerID)
+	zap.L().Info("schedule", zap.String("id", schedulerID), zap.String("interval", interval), zap.Any("triggerFunc", triggerFunc))
 	cronSpec := fmt.Sprintf("@every %s", interval)
 	err := coreScheduler.SVC.AddFunc(schedulerID, cronSpec, triggerFunc)
 	if err != nil {

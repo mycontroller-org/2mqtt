@@ -4,15 +4,19 @@ import (
 	"fmt"
 
 	"github.com/mycontroller-org/2mqtt/pkg/model"
-	config "github.com/mycontroller-org/2mqtt/pkg/model/config"
+	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
+	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
 )
 
-func Get(adapterCfg *config.AdapterConfig) (model.Formatter, error) {
-	sourceType := adapterCfg.Source.GetString(model.KeyType)
+const PluginRaw = "raw"
+
+func NewProvider(cfg cmap.CustomMap) (providerType.Plugin, error) {
+	sourceType := cfg.GetString(model.KeyType)
+	name := cfg.GetString(model.KeyName)
 
 	switch sourceType {
 	case model.DeviceSerial, model.DeviceEthernet:
-		return SourceType(adapterCfg.Name), nil
+		return SourceType(name), nil
 
 	default:
 		return nil, fmt.Errorf("unsupported source type:%s", sourceType)
