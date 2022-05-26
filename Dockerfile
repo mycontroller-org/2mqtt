@@ -1,4 +1,4 @@
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.16-alpine3.13 AS builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.18-alpine3.15 AS builder
 RUN mkdir /app
 ADD . /app
 WORKDIR /app
@@ -14,7 +14,7 @@ ARG TARGETARCH
 RUN source ./scripts/version.sh && \
   GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -v -o 2mqtt -ldflags "$LD_FLAGS" cmd/main.go
 
-FROM alpine:3.13
+FROM alpine:3.15
 
 LABEL maintainer="Jeeva Kandasamy <jkandasa@gmail.com>"
 
