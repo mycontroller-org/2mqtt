@@ -7,10 +7,10 @@ import (
 	"time"
 
 	paho "github.com/eclipse/paho.mqtt.golang"
-	"github.com/mycontroller-org/2mqtt/pkg/model"
+	model "github.com/mycontroller-org/2mqtt/pkg/types"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
-	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
-	"github.com/mycontroller-org/backend/v2/pkg/utils"
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
+	"github.com/mycontroller-org/server/v2/pkg/utils"
 
 	"go.uber.org/zap"
 )

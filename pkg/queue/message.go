@@ -3,7 +3,7 @@ package queue
 import (
 	"sync"
 
-	"github.com/mycontroller-org/2mqtt/pkg/model"
+	"github.com/mycontroller-org/2mqtt/pkg/types"
 	"go.uber.org/zap"
 )
 

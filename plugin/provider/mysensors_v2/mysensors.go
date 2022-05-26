@@ -3,9 +3,9 @@ package mysensors
 import (
 	"fmt"
 
-	"github.com/mycontroller-org/2mqtt/pkg/model"
+	"github.com/mycontroller-org/2mqtt/pkg/types"
 	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
-	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 )
 
 const PluginMySensors = "mysensors_v2"

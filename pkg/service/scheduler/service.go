@@ -3,7 +3,7 @@ package scheduler
 import (
 	"fmt"
 
-	coreScheduler "github.com/mycontroller-org/backend/v2/pkg/service/core_scheduler"
+	coreScheduler "github.com/mycontroller-org/server/v2/pkg/service/core_scheduler"
 
 	"go.uber.org/zap"
 )

@@ -5,13 +5,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mycontroller-org/2mqtt/pkg/model"
-	config "github.com/mycontroller-org/2mqtt/pkg/model/config"
+	"github.com/mycontroller-org/2mqtt/pkg/types"
+	config "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	"github.com/mycontroller-org/2mqtt/pkg/queue"
 	scheduler "github.com/mycontroller-org/2mqtt/pkg/service/scheduler"
 	devicePlugin "github.com/mycontroller-org/2mqtt/plugin/device"
 	providerPlugin "github.com/mycontroller-org/2mqtt/plugin/provider"
-	"github.com/mycontroller-org/backend/v2/pkg/utils/concurrency"
+	"github.com/mycontroller-org/server/v2/pkg/utils/concurrency"
 	"go.uber.org/zap"
 )
 

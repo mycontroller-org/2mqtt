@@ -3,11 +3,11 @@ package serial
 import (
 	"time"
 
-	"github.com/mycontroller-org/2mqtt/pkg/model"
+	"github.com/mycontroller-org/2mqtt/pkg/types"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
-	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
-	"github.com/mycontroller-org/backend/v2/pkg/utils"
-	"github.com/mycontroller-org/backend/v2/pkg/utils/concurrency"
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
+	"github.com/mycontroller-org/server/v2/pkg/utils"
+	"github.com/mycontroller-org/server/v2/pkg/utils/concurrency"
 	ser "github.com/tarm/serial"
 	"go.uber.org/zap"
 )

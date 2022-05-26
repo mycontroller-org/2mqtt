@@ -9,6 +9,7 @@ const (
 	DeviceEthernet = "ethernet"
 	DeviceSerial   = "serial"
 	DeviceMQTT     = "mqtt"
+	DeviceHTTP     = "http"
 
 	// keys used across
 	KeyType            = "type"
@@ -16,6 +17,8 @@ const (
 	KeyMqttTopic       = "mqtt_topic"
 	KeyMqttQoS         = "mqtt_qos"
 	KeyMessageSplitter = "message_splitter"
+	KeyHeaders         = "headers"
+	KeyURL             = "url"
 
 	// Status
 	StatusUP    = "up"

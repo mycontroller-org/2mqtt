@@ -1,7 +1,7 @@
 package device
 
 import (
-	model "github.com/mycontroller-org/2mqtt/pkg/model"
+	model "github.com/mycontroller-org/2mqtt/pkg/types"
 )
 
 // Device can be a serial, mqtt, ethernet, etc.,

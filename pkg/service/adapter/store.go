@@ -3,7 +3,7 @@ package adapter
 import (
 	"sync"
 
-	config "github.com/mycontroller-org/2mqtt/pkg/model/config"
+	config "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	"go.uber.org/zap"
 )
 

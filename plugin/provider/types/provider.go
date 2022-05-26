@@ -1,6 +1,6 @@
 package types
 
-import "github.com/mycontroller-org/2mqtt/pkg/model"
+import "github.com/mycontroller-org/2mqtt/pkg/types"
 
 // Formatter interface, used to convert the data
 type Plugin interface {

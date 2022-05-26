@@ -1,6 +1,6 @@
 package model
 
-import "github.com/mycontroller-org/backend/v2/pkg/model/cmap"
+import "github.com/mycontroller-org/server/v2/pkg/types/cmap"
 
 // Config
 type Config struct {

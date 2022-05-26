@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
-	"github.com/mycontroller-org/backend/v2/pkg/model/cmap"
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"go.uber.org/zap"
 )
 

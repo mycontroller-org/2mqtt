@@ -8,7 +8,7 @@ import (
 
 	adapterSVC "github.com/mycontroller-org/2mqtt/pkg/service/adapter"
 	cfg "github.com/mycontroller-org/2mqtt/pkg/service/configuration"
-	sch "github.com/mycontroller-org/backend/v2/pkg/service/core_scheduler"
+	sch "github.com/mycontroller-org/server/v2/pkg/service/core_scheduler"
 	"go.uber.org/zap"
 )
 
