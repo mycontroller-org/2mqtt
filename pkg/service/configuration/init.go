@@ -7,7 +7,7 @@ import (
 	cfgML "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	loggerUtils "github.com/mycontroller-org/server/v2/pkg/utils/logger"
 	"go.uber.org/zap"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 // configuration globally accessable
