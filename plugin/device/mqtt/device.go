@@ -83,16 +83,13 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify}
 	opts.SetTLSConfig(tlsConfig)
 
-	c := paho.NewClient(opts)
-	token := c.Connect()
+	endpoint.Client = paho.NewClient(opts)
+	token := endpoint.Client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
 	}
 	if err := token.Error(); err != nil {
 		return nil, err
 	}
-
-	// adding client
-	endpoint.Client = c
 
 	zap.L().Debug("mqtt client connected successfully", zap.Any("adapterName", ID), zap.String("timeTaken", time.Since(start).String()), zap.Any("clientConfig", cfg))
 	return endpoint, nil
@@ -183,8 +180,10 @@ func (ep *Endpoint) Subscribe(topicsStr string) error {
 		token := ep.Client.Subscribe(topic, 0, ep.getCallBack())
 		token.WaitTimeout(3 * time.Second)
 		if token.Error() != nil {
+			zap.L().Error("error on subscription", zap.String("adapterName", ep.ID), zap.String("topic", topic), zap.Error(token.Error()))
 			return token.Error()
 		}
+		zap.L().Debug("subscribed a topic", zap.String("adapterName", ep.ID), zap.String("topic", topic))
 	}
 	return nil
 }
