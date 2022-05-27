@@ -84,7 +84,36 @@ source:
   transmit_pre_delay: 10ms          # waits and sends a message, to avoid collision on the source network
   message_splitter: # message splitter byte, default '10'
 ```
+#### HTTP
+```yaml
+source:
+  type: http                      # source device type
+  listen_address: "0.0.0.0:8080"  # listening address and port
+  is_auth_enabled: true           # enable/disable basic authentication
+  username: hello                 # username of basic authentication
+  password: hello123              # password of basic authentication
+```
+for http source,on mqtt the payload will be as follows,
+```json
+{
+  "method":"POST",
+  "remoteAddress":"192.168.0.1:57112",
+  "host":"my-secret-host.com:8080",
+  "path":"/hello",
+  "body":"say hello",
+  "queryParameters":{
+    "q1": ["v1"],
+    "q2": ["v1", "v2"]
+  },
+  "headers":{
+    "Accept-Encoding":["gzip"],
+    "Cache-Control":["no-cache"],
+  },
+  "timestamp":"2022-05-27T08:01:55.806281887+05:30"
+}
+```
 
+---
 ### Special note on message_splitter
 * `message_splitter` is a reference char to understand the end of message on serial and ethernet device read<br>
 * This special char will be included while writing to the device.

@@ -63,10 +63,17 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 		statusFunc:     statusFunc,
 	}
 
+	// handler
+	var handler http.Handler = deviceHandler{receiveMsgFunc: rxFunc, ID: ID}
+	// include basic auth if enabled
+	if cfg.IsAuthEnabled {
+		handler = MiddlewareBasicAuthentication(cfg.Username, cfg.Password, handler)
+	}
+
 	// start the server
 	server := &http.Server{
 		ReadTimeout: defaultReadTimeout,
-		Handler:     deviceHandler{receiveMsgFunc: rxFunc, ID: ID},
+		Handler:     handler,
 		// 	ErrorLog:    , // implement error logger
 	}
 
