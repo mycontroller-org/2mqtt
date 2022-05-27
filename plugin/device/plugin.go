@@ -3,7 +3,7 @@ package plugin
 import (
 	"fmt"
 
-	"github.com/mycontroller-org/2mqtt/pkg/types"
+	model "github.com/mycontroller-org/2mqtt/pkg/types"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"go.uber.org/zap"
@@ -25,7 +25,7 @@ func Register(name string, fn CreatorFn) {
 
 func Create(name, ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (p deviceType.Plugin, err error) {
 	if fn, ok := creators[name]; ok {
-		p, err = fn("", config, rxFunc, statusFunc)
+		p, err = fn(ID, config, rxFunc, statusFunc)
 	} else {
 		err = fmt.Errorf("device plugin [%s] is not registered", name)
 	}

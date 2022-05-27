@@ -12,6 +12,7 @@
 * `raw` - sends the serial,ethernet messages to mqtt as is
   * `serial` to `MQTT`
   * `ethernet` to `MQTT`
+  * `http` to `MQTT`
 
 ## Download
 ### Container images
