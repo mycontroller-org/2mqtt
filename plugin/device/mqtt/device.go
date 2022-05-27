@@ -172,6 +172,9 @@ func (ep *Endpoint) getCallBack() func(paho.Client, paho.Message) {
 
 // Subscribe a topic
 func (ep *Endpoint) Subscribe(topic string) error {
+	if topic == "" {
+		return nil
+	}
 	token := ep.Client.Subscribe(topic, 0, ep.getCallBack())
 	token.WaitTimeout(3 * time.Second)
 	if token.Error() != nil {

@@ -3,7 +3,7 @@ package raw
 import (
 	"fmt"
 
-	"github.com/mycontroller-org/2mqtt/pkg/types"
+	model "github.com/mycontroller-org/2mqtt/pkg/types"
 	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 )
@@ -15,7 +15,7 @@ func NewProvider(cfg cmap.CustomMap) (providerType.Plugin, error) {
 	name := cfg.GetString(model.KeyName)
 
 	switch sourceType {
-	case model.DeviceSerial, model.DeviceEthernet:
+	case model.DeviceSerial, model.DeviceEthernet, model.DeviceHTTP:
 		return SourceType(name), nil
 
 	default:

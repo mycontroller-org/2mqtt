@@ -96,7 +96,7 @@ func (ep *Endpoint) Name() string {
 }
 
 func (ep *Endpoint) Write(message *model.Message) error {
-	return fmt.Errorf("write not supported by this device")
+	return fmt.Errorf("write not support not implemented, adapterName:%s", ep.ID)
 }
 
 // Close the driver
