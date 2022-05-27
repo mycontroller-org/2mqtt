@@ -93,7 +93,7 @@ source:
   username: hello                 # username of basic authentication
   password: hello123              # password of basic authentication
 ```
-for http source,on mqtt the payload will be as follows,
+for http source, on mqtt the payload (json string) will be as follows,
 ```json
 {
   "method":"POST",
@@ -115,6 +115,7 @@ for http source,on mqtt the payload will be as follows,
 
 ---
 ### Special note on message_splitter
+*NOTE: Applicable for `serial` and `ethernet` devices*
 * `message_splitter` is a reference char to understand the end of message on serial and ethernet device read<br>
 * This special char will be included while writing to the device.
 * supports only one char, should be supplied in byte, ie:`0` to `255`, extended ASCII chars
