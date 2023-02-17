@@ -12,7 +12,7 @@ RUN go mod download -x
 ARG TARGETOS
 ARG TARGETARCH
 RUN source ./scripts/version.sh && \
-  GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -v -o 2mqtt -ldflags "$LD_FLAGS" cmd/main.go
+  GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH:-amd64} go build -v -o 2mqtt -ldflags "-s -w $LD_FLAGS" cmd/main.go
 
 FROM alpine:3.17
 
