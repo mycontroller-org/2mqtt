@@ -20,7 +20,7 @@ cd ${ACTUAL_LOCATION}
 BINARY_FILE=./2mqtt
 CONFIG_FILE=./config.yaml
 
-START_COMMAND="${BINARY_FILE} -config ${CONFIG_FILE}"
+START_COMMAND="${BINARY_FILE} --config ${CONFIG_FILE}"
 
 SVC_PID=`ps -ef | grep "${START_COMMAND}" | grep -v grep | awk '{ print $2 }'`
 

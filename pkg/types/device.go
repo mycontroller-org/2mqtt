@@ -1,4 +1,4 @@
-package model
+package types
 
 const (
 	ProviderMySensorsV2 = "mysensors_v2"

@@ -11,12 +11,12 @@ import (
 const PluginMySensors = "mysensors_v2"
 
 func NewProvider(config cmap.CustomMap) (providerType.Plugin, error) {
-	sourceType := config.GetString(model.KeyType)
-	name := config.GetString(model.KeyName)
+	sourceType := config.GetString(types.KeyType)
+	name := config.GetString(types.KeyName)
 
 	switch sourceType {
-	case model.DeviceSerial, model.DeviceEthernet:
-		config.Set(model.KeyMessageSplitter, MessageSplitter, nil)
+	case types.DeviceSerial, types.DeviceEthernet:
+		config.Set(types.KeyMessageSplitter, MessageSplitter, nil)
 		return SourceType(name), nil
 
 	default:

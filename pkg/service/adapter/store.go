@@ -45,6 +45,7 @@ func Start(adapters []config.AdapterConfig) {
 		if !adapterCfg.Enabled {
 			continue
 		}
+		zap.L().Debug("starting an adapter", zap.String("name", adapterCfg.Name), zap.String("provider", adapterCfg.Provider))
 		service, err := NewService(&adapterCfg)
 		if err != nil {
 			zap.L().Error("error on starting a service", zap.Error(err), zap.String("adapterName", adapterCfg.Name))

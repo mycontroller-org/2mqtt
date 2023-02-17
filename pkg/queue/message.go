@@ -11,7 +11,7 @@ import (
 type MessageQueue struct {
 	ID       string
 	Limit    int
-	Messages []*model.Message
+	Messages []*types.Message
 	mutex    *sync.RWMutex
 }
 
@@ -19,14 +19,14 @@ type MessageQueue struct {
 func New(ID string, limit int) *MessageQueue {
 	return &MessageQueue{
 		ID:       ID,
-		Messages: make([]*model.Message, 0),
+		Messages: make([]*types.Message, 0),
 		Limit:    limit,
 		mutex:    &sync.RWMutex{},
 	}
 }
 
 // Add a message into the queue
-func (q *MessageQueue) Add(msg *model.Message) {
+func (q *MessageQueue) Add(msg *types.Message) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
@@ -37,7 +37,7 @@ func (q *MessageQueue) Add(msg *model.Message) {
 }
 
 // Get a message from the queue, if empty returns nil
-func (q *MessageQueue) Get() *model.Message {
+func (q *MessageQueue) Get() *types.Message {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 

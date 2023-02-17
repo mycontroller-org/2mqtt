@@ -10,12 +10,12 @@ func (st SourceType) Name() string {
 	return PluginRaw
 }
 
-func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message, error) {
+func (st SourceType) ToSourceMessage(mqttMessage *types.Message) (*types.Message, error) {
 	if len(mqttMessage.Data) == 0 {
 		return nil, nil
 	}
 
-	toSourceMsg := &model.Message{
+	toSourceMsg := &types.Message{
 		Data:      mqttMessage.Data,
 		Others:    mqttMessage.Others,
 		Timestamp: mqttMessage.Timestamp,
@@ -23,13 +23,13 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 	return toSourceMsg, nil
 }
 
-func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message, error) {
+func (st SourceType) ToMQTTMessage(sourceMessage *types.Message) (*types.Message, error) {
 	if len(sourceMessage.Data) == 0 {
 		return nil, nil
 	}
 
-	toMqttMsg := model.NewMessage(sourceMessage.Data)
+	toMqttMsg := types.NewMessage(sourceMessage.Data)
 	toMqttMsg.Timestamp = sourceMessage.Timestamp
-	toMqttMsg.Others.Set(model.KeyMqttTopic, "", nil)
+	toMqttMsg.Others.Set(types.KeyMqttTopic, "", nil)
 	return toMqttMsg, nil
 }

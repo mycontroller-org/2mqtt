@@ -47,7 +47,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 		return nil, err
 	}
 
-	zap.L().Debug("generated config", zap.Any("config", cfg))
+	zap.L().Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
 
 	zap.L().Info("opening the listening address", zap.String("adapterName", ID), zap.String("listenAddress", cfg.ListenAddress))
 	listener, err := net.Listen("tcp", cfg.ListenAddress)

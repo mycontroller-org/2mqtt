@@ -18,9 +18,9 @@ func (st SourceType) Name() string {
 	return PluginMySensors
 }
 
-func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message, error) {
+func (st SourceType) ToSourceMessage(mqttMessage *types.Message) (*types.Message, error) {
 	// node-id;child-sensor-id;command;ack;type;payload\n
-	topic := mqttMessage.Others.GetString(model.KeyMqttTopic)
+	topic := mqttMessage.Others.GetString(types.KeyMqttTopic)
 	topicSlice := strings.Split(topic, "/")
 	if len(topicSlice) < 5 {
 		zap.L().Warn("invalid topic", zap.Any("message", mqttMessage))
@@ -37,7 +37,7 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 
 	finalData := strings.Join(topicSlice[:], ";")
 
-	formattedMessage := &model.Message{
+	formattedMessage := &types.Message{
 		Data:      []byte(finalData),
 		Others:    mqttMessage.Others,
 		Timestamp: mqttMessage.Timestamp,
@@ -45,7 +45,7 @@ func (st SourceType) ToSourceMessage(mqttMessage *model.Message) (*model.Message
 	return formattedMessage, nil
 }
 
-func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message, error) {
+func (st SourceType) ToMQTTMessage(sourceMessage *types.Message) (*types.Message, error) {
 	// structure: node-id/child-sensor-id/command/ack/type payload
 	data := ""
 	if len(sourceMessage.Data) > 0 {
@@ -59,9 +59,9 @@ func (st SourceType) ToMQTTMessage(sourceMessage *model.Message) (*model.Message
 	topic := strings.Join(dataSlice[:5], "/")
 	payload := dataSlice[5]
 
-	formattedMessage := model.NewMessage([]byte(payload))
+	formattedMessage := types.NewMessage([]byte(payload))
 	formattedMessage.Timestamp = sourceMessage.Timestamp
-	formattedMessage.Others.Set(model.KeyMqttTopic, topic, nil)
+	formattedMessage.Others.Set(types.KeyMqttTopic, topic, nil)
 
 	return formattedMessage, nil
 }

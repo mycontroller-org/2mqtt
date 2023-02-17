@@ -7,21 +7,18 @@ import (
 	"time"
 
 	adapterSVC "github.com/mycontroller-org/2mqtt/pkg/service/adapter"
-	cfg "github.com/mycontroller-org/2mqtt/pkg/service/configuration"
+	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	sch "github.com/mycontroller-org/server/v2/pkg/service/core_scheduler"
 	"go.uber.org/zap"
 )
 
-func StartServices() {
+func StartServices(cfg *cfgTY.Config) {
 	start := time.Now()
-
-	cfg.InitConfig()
-	InitLogger()
 
 	sch.Init() // scheduler
 
 	// start adapter services
-	adapterSVC.Start(cfg.CFG.Adapters)
+	adapterSVC.Start(cfg.Adapters)
 
 	zap.L().Info("services started", zap.String("timeTaken", time.Since(start).String()))
 

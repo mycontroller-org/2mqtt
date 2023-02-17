@@ -36,14 +36,14 @@ type Endpoint struct {
 	Config         Config
 	connUrl        *url.URL
 	conn           net.Conn
-	receiveMsgFunc func(rm *model.Message)
-	statusFunc     func(state *model.State)
+	receiveMsgFunc func(rm *types.Message)
+	statusFunc     func(state *types.State)
 	safeClose      *concurrency.Channel
 	txPreDelay     time.Duration
 }
 
 // NewDevice ethernet driver
-func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (deviceType.Plugin, error) {
+func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message), statusFunc func(state *types.State)) (deviceType.Plugin, error) {
 	var cfg Config
 	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
 	if err != nil {
@@ -55,7 +55,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 		cfg.MessageSplitter = &splitter
 	}
 
-	zap.L().Debug("generated config", zap.Any("config", cfg))
+	zap.L().Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
 
 	serverURL, err := url.Parse(cfg.Server)
 	if err != nil {
@@ -78,7 +78,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 		txPreDelay:     utils.ToDuration(cfg.TransmitPreDelay, transmitPreDelayDefault),
 	}
 
-	// start serail read listener
+	// start serial read listener
 	go endpoint.dataListener()
 	return endpoint, nil
 }
@@ -87,7 +87,7 @@ func (ep *Endpoint) Name() string {
 	return PluginEthernet
 }
 
-func (ep *Endpoint) Write(message *model.Message) error {
+func (ep *Endpoint) Write(message *types.Message) error {
 	if message == nil || len(message.Data) == 0 {
 		return nil
 	}
@@ -123,8 +123,8 @@ func (ep *Endpoint) dataListener() {
 			rxLength, err := ep.conn.Read(readBuf)
 			if err != nil {
 				zap.L().Error("error on reading data from a ethernet connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
-				state := &model.State{
-					Status:  model.StatusError,
+				state := &types.State{
+					Status:  types.StatusError,
 					Message: err.Error(),
 					Since:   time.Now(),
 				}
@@ -139,7 +139,7 @@ func (ep *Endpoint) dataListener() {
 					dataCloned := make([]byte, len(data))
 					copy(dataCloned, data)
 					data = nil // reset local buffer
-					message := model.NewMessage(dataCloned)
+					message := types.NewMessage(dataCloned)
 					ep.receiveMsgFunc(message)
 				} else {
 					data = append(data, b)

@@ -1,4 +1,4 @@
-package model
+package config
 
 import "github.com/mycontroller-org/server/v2/pkg/types/cmap"
 

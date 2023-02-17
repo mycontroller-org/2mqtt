@@ -1,6 +1,7 @@
 package version
 
 import (
+	"fmt"
 	"runtime"
 )
 
@@ -21,8 +22,8 @@ type Version struct {
 }
 
 // Get returns the Version object
-func Get() Version {
-	return Version{
+func Get() *Version {
+	return &Version{
 		GitCommit: gitCommit,
 		Version:   version,
 		BuildDate: buildDate,
@@ -30,4 +31,10 @@ func Get() Version {
 		Platform:  runtime.GOOS,
 		Arch:      runtime.GOARCH,
 	}
+}
+
+func (v *Version) String() string {
+	return fmt.Sprintf("{version:%s, gitCommit:%s, buildDate:%s, goLang:%s, platform:%s, arch:%s}",
+		v.Version, v.GitCommit, v.BuildDate, v.GoLang, v.Platform, v.Arch,
+	)
 }
