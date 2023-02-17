@@ -17,10 +17,17 @@ type LoggerConfig struct {
 
 // AdapterConfig struct
 type AdapterConfig struct {
-	Name           string         `yaml:"name"`
-	Enabled        bool           `yaml:"enabled"`
-	ReconnectDelay string         `yaml:"reconnect_delay"`
-	Provider       string         `yaml:"provider"`
-	Source         cmap.CustomMap `yaml:"source"`
-	MQTT           cmap.CustomMap `yaml:"mqtt"`
+	Name            string          `yaml:"name"`
+	Enabled         bool            `yaml:"enabled"`
+	ReconnectDelay  string          `yaml:"reconnect_delay"`
+	Provider        string          `yaml:"provider"`
+	Source          cmap.CustomMap  `yaml:"source"`
+	MQTT            cmap.CustomMap  `yaml:"mqtt"`
+	FormatterScript FormatterScript `yaml:"formatter_script"`
+}
+
+// enter formatter script details, will be used along with raw provider
+type FormatterScript struct {
+	ToSource string `yaml:"to_source"`
+	ToMQTT   string `yaml:"to_mqtt"`
 }

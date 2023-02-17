@@ -3,13 +3,14 @@ package plugin
 import (
 	"fmt"
 
+	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"go.uber.org/zap"
 )
 
 // CreatorFn func type
-type CreatorFn func(config cmap.CustomMap) (providerType.Plugin, error)
+type CreatorFn func(config cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error)
 
 // Creators is used for create plugins.
 var creators = make(map[string]CreatorFn)
@@ -22,9 +23,9 @@ func Register(name string, fn CreatorFn) {
 	creators[name] = fn
 }
 
-func Create(name string, config cmap.CustomMap) (p providerType.Plugin, err error) {
+func Create(name string, config cmap.CustomMap, formatter cfgTY.FormatterScript) (p providerType.Plugin, err error) {
 	if fn, ok := creators[name]; ok {
-		p, err = fn(config)
+		p, err = fn(config, formatter)
 	} else {
 		err = fmt.Errorf("device plugin [%s] is not registered", name)
 	}

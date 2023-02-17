@@ -46,7 +46,7 @@ type Service struct {
 
 // NewService creates brand new Service
 func NewService(adapterCfg *config.AdapterConfig) (*Service, error) {
-	provider, err := providerPlugin.Create(adapterCfg.Provider, adapterCfg.Source)
+	provider, err := providerPlugin.Create(adapterCfg.Provider, adapterCfg.Source, adapterCfg.FormatterScript)
 	if err != nil {
 		return nil, err
 	}

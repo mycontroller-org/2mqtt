@@ -3,20 +3,21 @@ package raw
 import (
 	"fmt"
 
-	model "github.com/mycontroller-org/2mqtt/pkg/types"
+	"github.com/mycontroller-org/2mqtt/pkg/types"
+	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	providerType "github.com/mycontroller-org/2mqtt/plugin/provider/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 )
 
 const PluginRaw = "raw"
 
-func NewProvider(cfg cmap.CustomMap) (providerType.Plugin, error) {
-	sourceType := cfg.GetString(model.KeyType)
-	name := cfg.GetString(model.KeyName)
+func NewProvider(cfg cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error) {
+	sourceType := cfg.GetString(types.KeyType)
+	name := cfg.GetString(types.KeyName)
 
 	switch sourceType {
-	case model.DeviceSerial, model.DeviceEthernet, model.DeviceHTTP:
-		return SourceType(name), nil
+	case types.DeviceSerial, types.DeviceEthernet, types.DeviceHTTP:
+		return &RawProvider{name: name, formatter: formatter}, nil
 
 	default:
 		return nil, fmt.Errorf("unsupported source type:%s", sourceType)
