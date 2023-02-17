@@ -96,7 +96,7 @@ func TestFormatterScript(t *testing.T) {
 				Timestamp: timeStamp,
 			},
 			toSourceOutput: &types.Message{Data: []byte(`[1,"myTopicPi","3.141592653"]`), Others: map[string]interface{}{}, Timestamp: timeStamp},
-			toMqttInput:    &types.Message{Data: []byte(`[1,"myTopicPi","3.141592653","1","0", "0xa0"]`), Others: map[string]interface{}{}, Timestamp: timeStamp},
+			toMqttInput:    &types.Message{Data: []byte(`[1,"myTopicPi","3.141592653","1","0", "0xa0"]\r`), Others: map[string]interface{}{}, Timestamp: timeStamp},
 			toMqttOutput: &types.Message{
 				Data:      []byte("3.141592653"),
 				Others:    map[string]interface{}{"command": int64(1), "crc": "0xa0", "mqtt_qos": "1", "mqtt_retain": "0", "mqtt_topic": "myTopicPi"},
@@ -110,7 +110,12 @@ func TestFormatterScript(t *testing.T) {
 				}
 				`,
 				ToMQTT: `
-				let serialData = JSON.parse(raw_data)
+				let update_raw_data = raw_data
+				if (update_raw_data.endsWith("\\r")){
+					update_raw_data = update_raw_data.slice(0, -2)
+				}
+				console.log(update_raw_data)
+				let serialData = JSON.parse(update_raw_data)
 				// [<COMMAND>,<TOPIC>,<MESSAGE>,<QOS>,<RETAIN>,<CRC>]
 				// [1,"myTopicPi","3.141592653"]
 
