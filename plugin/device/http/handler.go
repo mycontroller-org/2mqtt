@@ -1,7 +1,7 @@
 package http
 
 import (
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
@@ -32,7 +32,7 @@ func (h deviceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut ||
 		r.Method == http.MethodPost ||
 		r.Method == http.MethodDelete {
-		data, err := ioutil.ReadAll(r.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			zap.L().Error("error on reading body", zap.String("adapterName", h.ID), zap.String("path", r.URL.Path), zap.Error(err))
 			return
