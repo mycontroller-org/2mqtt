@@ -15,7 +15,7 @@ adapters:
       transmit_pre_delay: 10ms
     mqtt:
       broker: tcp://192.168.10.21:1883
-      insecure_skip_verify: false
+      insecure: false
       username: 
       password: 
       subscribe: in_rfm69/#
@@ -34,7 +34,7 @@ adapters:
       transmit_pre_delay: 10ms
     mqtt:
       broker: tcp://192.168.10.21:1883
-      insecure_skip_verify: false
+      insecure: false
       username: 
       password: 
       subscribe: in_nrf24/#
@@ -55,7 +55,7 @@ adapters:
       message_splitter: 10
     mqtt:
       broker: tcp://192.168.10.21:1883
-      insecure_skip_verify: false
+      insecure: false
       username: 
       password: 
       subscribe: in/my_topic

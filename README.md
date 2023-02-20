@@ -57,7 +57,7 @@ adapters:   # you can have more than one adapter
       transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
     mqtt: # mqtt broker details
       broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
-      insecure_skip_verify: false       # enable/disable insecure on tls connection
+      insecure: false                   # enable/disable insecure on tls connection
       username:                         # username of the broker
       password:                         # password of the broker
       subscribe: in_rfm69/#             # subscribe a topic, should include `#` at the end, your controller to serial port(source)
@@ -154,7 +154,7 @@ adapters:   # you can have more than one adapter
       transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
     mqtt: # mqtt broker details
       broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
-      insecure_skip_verify: false       # enable/disable insecure on tls connection
+      insecure: false                   # enable/disable insecure on tls connection
       username:                         # username of the broker
       password:                         # password of the broker
       subscribe: receive_data/#         # subscribe a topic, should include `#` at the end, your controller to serial port(source)

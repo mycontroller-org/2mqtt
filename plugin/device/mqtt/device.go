@@ -25,16 +25,16 @@ const (
 
 // Config struct
 type Config struct {
-	Name               string `yaml:"name"`
-	Broker             string `yaml:"broker"`
-	InsecureSkipVerify bool   `yaml:"insecure_skip_verify"`
-	Username           string `yaml:"username"`
-	Password           string `yaml:"password" json:"-"`
-	Subscribe          string `yaml:"subscribe"`
-	Publish            string `yaml:"publish"`
-	QoS                int    `yaml:"qos"`
-	TransmitPreDelay   string `yaml:"transmit_pre_delay"`
-	ReconnectDelay     string `yaml:"reconnect_delay"`
+	Name             string `yaml:"name"`
+	Broker           string `yaml:"broker"`
+	Insecure         bool   `yaml:"insecure"`
+	Username         string `yaml:"username"`
+	Password         string `yaml:"password" json:"-"`
+	Subscribe        string `yaml:"subscribe"`
+	Publish          string `yaml:"publish"`
+	QoS              int    `yaml:"qos"`
+	TransmitPreDelay string `yaml:"transmit_pre_delay"`
+	ReconnectDelay   string `yaml:"reconnect_delay"`
 }
 
 // Endpoint data
@@ -80,7 +80,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 	opts.SetConnectionLostHandler(endpoint.onConnectionLostHandler)
 
 	// update tls config
-	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify}
+	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.Insecure}
 	opts.SetTLSConfig(tlsConfig)
 
 	endpoint.Client = paho.NewClient(opts)
