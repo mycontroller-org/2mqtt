@@ -2,6 +2,7 @@ package raw
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
 	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
@@ -13,6 +14,7 @@ const (
 	KeyRawData = "raw_data"
 	KeyData    = "data"
 	KeyOthers  = "others"
+	KeyIgnore  = "ignore"
 )
 
 type RawProvider struct {
@@ -34,6 +36,9 @@ func (rp *RawProvider) ToSourceMessage(mqttMessage *types.Message) (*types.Messa
 		outMsg, err := rp.executeScript(rp.formatter.ToSource, mqttMessage)
 		if err != nil {
 			return nil, err
+		}
+		if outMsg == nil {
+			return nil, nil
 		}
 		toSourceMsg = outMsg
 	} else if len(mqttMessage.Data) == 0 {
@@ -60,6 +65,9 @@ func (rp *RawProvider) ToMQTTMessage(sourceMessage *types.Message) (*types.Messa
 		outMsg, err := rp.executeScript(rp.formatter.ToMQTT, sourceMessage)
 		if err != nil {
 			return nil, err
+		}
+		if outMsg == nil {
+			return nil, nil
 		}
 		toMqttMsg = outMsg
 	}
@@ -100,6 +108,11 @@ func (rp *RawProvider) executeScript(script string, msg *types.Message) (*types.
 			if key == KeyData {
 				foundData = true
 				outMsg.Data = []byte(fmt.Sprintf("%v", value))
+				continue
+			} else if key == KeyIgnore {
+				if strings.ToLower(strings.TrimSpace(fmt.Sprintf("%v", value))) == "true" {
+					return nil, nil
+				}
 				continue
 			}
 			outMsg.Others[key] = value

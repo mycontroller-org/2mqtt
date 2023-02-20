@@ -131,6 +131,29 @@ func TestFormatterScript(t *testing.T) {
 				`,
 			},
 		},
+		{
+			testName:       "TestScriptIgnore",
+			toSourceInput:  &types.Message{Data: []byte("ignore_me"), Others: map[string]interface{}{}, Timestamp: timeStamp},
+			toSourceOutput: nil,
+			toMqttInput:    &types.Message{Data: []byte("ignore_me"), Others: map[string]interface{}{}, Timestamp: timeStamp},
+			toMqttOutput:   nil,
+			formatter: config.FormatterScript{
+				ToSource: `
+					const ignoreMe = raw_data == "ignore_me"
+					result = {
+					  data: raw_data,
+					  ignore: ignoreMe,
+					}
+				`,
+				ToMQTT: `
+					const ignoreMe = raw_data == "ignore_me"
+					result = {
+					  data: raw_data,
+					  ignore: ignoreMe,
+					}
+				`,
+			},
+		},
 	}
 
 	for _, test := range tests {
