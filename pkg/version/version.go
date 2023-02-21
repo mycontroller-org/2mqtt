@@ -16,7 +16,8 @@ type Version struct {
 	Version   string `json:"version"`
 	GitCommit string `json:"gitCommit"`
 	BuildDate string `json:"buildDate"`
-	GoLang    string `json:"goLang"`
+	GoVersion string `json:"goVersion"`
+	Compiler  string `json:"compiler"`
 	Platform  string `json:"platform"`
 	Arch      string `json:"arch"`
 }
@@ -27,14 +28,15 @@ func Get() *Version {
 		GitCommit: gitCommit,
 		Version:   version,
 		BuildDate: buildDate,
-		GoLang:    runtime.Version(),
+		GoVersion: runtime.Version(),
+		Compiler:  runtime.Compiler,
 		Platform:  runtime.GOOS,
 		Arch:      runtime.GOARCH,
 	}
 }
 
 func (v *Version) String() string {
-	return fmt.Sprintf("{version:%s, gitCommit:%s, buildDate:%s, goLang:%s, platform:%s, arch:%s}",
-		v.Version, v.GitCommit, v.BuildDate, v.GoLang, v.Platform, v.Arch,
+	return fmt.Sprintf("{version:%s, gitCommit:%s, buildDate:%s, goVersion:%s, compiler:%s, platform:%s, arch:%s}",
+		v.Version, v.GitCommit, v.BuildDate, v.GoVersion, v.Compiler, v.Platform, v.Arch,
 	)
 }
