@@ -16,8 +16,10 @@ fi
 
 # update version number
 export VERSION=`echo ${GIT_BRANCH} |  awk 'match($0, /([0-9]*\.[0-9]*)$/) { print substr($0, RSTART, RLENGTH) }'`
-if [ ${GIT_BRANCH} = "master" ]; then
-export VERSION="master"
+if [ -z "$VERSION" ]; then
+  # takes version from versions file and adds devel suffix with that
+  STATIC_VERSION=`grep 2mqtt= versions.txt | awk -F= '{print $2}'`
+  export VERSION="${STATIC_VERSION}-devel"
 fi
 
 export LD_FLAGS="-X $VERSION_PKG.version=$VERSION -X $VERSION_PKG.buildDate=$BUILD_DATE -X $VERSION_PKG.gitCommit=$GIT_SHA"

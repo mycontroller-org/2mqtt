@@ -16,8 +16,6 @@
 
 ## Download
 ### Container images
-`master` branch images are tagged as `:master`<br>
-Both released and master branch container images are published in to the following registries,
   * [Docker Hub](https://hub.docker.com/r/mycontroller/2mqtt)
   * [Quay.io](https://quay.io/repository/mycontroller/2mqtt)
 #### Docker Run
@@ -27,7 +25,7 @@ docker run --detach --name 2mqtt \
     --device /dev/ttyUSB0:/dev/ttyUSB0 \
     --env  TZ="Asia/Kolkata" \
     --restart unless-stopped \
-    docker.io/mycontroller/2mqtt:master
+    docker.io/mycontroller/2mqtt:1.4
 ```
 
 ### Download Executables
