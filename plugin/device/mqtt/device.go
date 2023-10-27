@@ -135,7 +135,9 @@ func (ep *Endpoint) Write(message *model.Message) error {
 	topic := message.Others.GetString(model.KeyMqttTopic)
 	qos := byte(ep.Config.QoS)
 
-	time.Sleep(ep.txPreDelay) // transmit pre delay
+	if ep.txPreDelay > 0 {
+		time.Sleep(ep.txPreDelay) // transmit pre delay
+	}
 
 	for _, rawtopic := range strings.Split(ep.Config.Publish, ",") {
 		_topic := strings.TrimSpace(rawtopic)

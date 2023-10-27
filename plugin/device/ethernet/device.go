@@ -91,7 +91,11 @@ func (ep *Endpoint) Write(message *types.Message) error {
 	if message == nil || len(message.Data) == 0 {
 		return nil
 	}
-	time.Sleep(ep.txPreDelay) // transmit pre delay
+
+	if ep.txPreDelay > 0 {
+		time.Sleep(ep.txPreDelay) // transmit pre delay
+	}
+
 	_, err := ep.conn.Write(append(message.Data, *ep.Config.MessageSplitter))
 	return err
 }
