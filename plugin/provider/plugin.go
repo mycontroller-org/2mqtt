@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"context"
 	"fmt"
 
 	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
@@ -10,7 +11,7 @@ import (
 )
 
 // CreatorFn func type
-type CreatorFn func(config cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error)
+type CreatorFn func(ctx context.Context, config cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error)
 
 // Creators is used for create plugins.
 var creators = make(map[string]CreatorFn)
@@ -23,9 +24,9 @@ func Register(name string, fn CreatorFn) {
 	creators[name] = fn
 }
 
-func Create(name string, config cmap.CustomMap, formatter cfgTY.FormatterScript) (p providerType.Plugin, err error) {
+func Create(ctx context.Context, name string, config cmap.CustomMap, formatter cfgTY.FormatterScript) (p providerType.Plugin, err error) {
 	if fn, ok := creators[name]; ok {
-		p, err = fn(config, formatter)
+		p, err = fn(ctx, config, formatter)
 	} else {
 		err = fmt.Errorf("device plugin [%s] is not registered", name)
 	}

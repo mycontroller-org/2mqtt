@@ -1,6 +1,7 @@
 package raw
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
@@ -11,13 +12,13 @@ import (
 
 const PluginRaw = "raw"
 
-func NewProvider(cfg cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error) {
+func NewProvider(ctx context.Context, cfg cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error) {
 	sourceType := cfg.GetString(types.KeyType)
 	name := cfg.GetString(types.KeyName)
 
 	switch sourceType {
 	case types.DeviceSerial, types.DeviceEthernet, types.DeviceHTTP:
-		return &RawProvider{name: name, formatter: formatter}, nil
+		return New(ctx, name, formatter)
 
 	default:
 		return nil, fmt.Errorf("unsupported source type:%s", sourceType)

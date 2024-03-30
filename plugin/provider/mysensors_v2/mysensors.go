@@ -1,6 +1,7 @@
 package mysensors
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
@@ -11,14 +12,14 @@ import (
 
 const PluginMySensors = "mysensors_v2"
 
-func NewProvider(config cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error) {
+func NewProvider(ctx context.Context, config cmap.CustomMap, formatter cfgTY.FormatterScript) (providerType.Plugin, error) {
 	sourceType := config.GetString(types.KeyType)
 	name := config.GetString(types.KeyName)
 
 	switch sourceType {
 	case types.DeviceSerial, types.DeviceEthernet:
 		config.Set(types.KeyMessageSplitter, MessageSplitter, nil)
-		return SourceType(name), nil
+		return New(ctx, name)
 
 	default:
 		return nil, fmt.Errorf("unsupported source type:%s", sourceType)

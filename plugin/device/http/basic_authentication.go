@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	handlerUtils "github.com/mycontroller-org/server/v2/cmd/server/app/handler/utils"
+	handlerUtils "github.com/mycontroller-org/server/v2/pkg/utils/http_handler"
 )
 
 const (

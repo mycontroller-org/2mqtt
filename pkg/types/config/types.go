@@ -10,9 +10,10 @@ type Config struct {
 
 // LoggerConfig struct
 type LoggerConfig struct {
-	Mode     string `yaml:"mode"`
-	Encoding string `yaml:"encoding"`
-	Level    string `yaml:"level"`
+	Mode             string `yaml:"mode"`
+	Encoding         string `yaml:"encoding"`
+	Level            string `yaml:"level"`
+	EnableStacktrace bool   `yaml:"enable_stacktrace"`
 }
 
 // AdapterConfig struct

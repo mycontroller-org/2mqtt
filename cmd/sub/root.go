@@ -1,10 +1,11 @@
 package sub
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/mycontroller-org/2mqtt/pkg/service/start"
+	"github.com/mycontroller-org/2mqtt/cmd/helper"
 	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
 	"github.com/mycontroller-org/2mqtt/pkg/version"
 	loggerUtils "github.com/mycontroller-org/server/v2/pkg/utils/logger"
@@ -50,11 +51,10 @@ var rootCmd = &cobra.Command{
 			logger.Fatal("failed to parse config file", zap.Error(err))
 		}
 
-		// load actual logger
-		start.InitLogger(cfg.Logger)
-
-		// start services
-		start.StartServices(cfg)
+		// start service
+		ctx := context.Background()
+		toMqtt := helper.ToMqtt{}
+		toMqtt.Start(ctx, cfg)
 	},
 }
 

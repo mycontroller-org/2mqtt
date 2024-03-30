@@ -39,9 +39,10 @@ You can have more than one adapter configurations
 Provider options: `mysensors_v2` and `raw`
 ```yaml
 logger:
-  mode: development   # logger mode: development, production
-  encoding: console   # encoding options: console, json
-  level: info         # log levels: debug, info, warn, error, fatal
+  mode: development         # logger mode: development, production
+  encoding: console         # encoding options: console, json
+  level: info               # log levels: debug, info, warn, error, fatal
+  enable_stacktrace: false  # enable or disable error stack trace
 
 adapters:   # you can have more than one adapter
   - name: adapter1          # name of the adapter
@@ -63,6 +64,7 @@ adapters:   # you can have more than one adapter
       qos: 0                            # qos number: 0, 1, 2
       transmit_pre_delay: 0s
       reconnect_delay: 5s
+      connection_timeout: 30s           # mqtt connection timeout (default 30 seconds)
 ```
 ### Source device configuration
 Based on the source type the configurations will be different.
@@ -136,9 +138,10 @@ In `raw` provider we can add script to support custom specification. If we leave
 ### Configuration file with raw provider and a script support
 ```yaml
 logger:
-  mode: development   # logger mode: development, production
-  encoding: console   # encoding options: console, json
-  level: info         # log levels: debug, info, warn, error, fatal
+  mode: development         # logger mode: development, production
+  encoding: console         # encoding options: console, json
+  level: info               # log levels: debug, info, warn, error, fatal
+  enable_stacktrace: false  # enable or disable error stack trace
 
 adapters:   # you can have more than one adapter
   - name: adapter1          # name of the adapter
@@ -160,6 +163,7 @@ adapters:   # you can have more than one adapter
       qos: 0                            # qos number: 0, 1, 2
       transmit_pre_delay: 0s
       reconnect_delay: 5s
+      connection_timeout: 30s           # mqtt connection timeout (default 30 seconds)
     formatter_script: # script used to perform custom formatting
       to_mqtt: |
         // your multiline javascript

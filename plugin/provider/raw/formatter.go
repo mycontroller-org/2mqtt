@@ -1,13 +1,17 @@
 package raw
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
 	cfgTY "github.com/mycontroller-org/2mqtt/pkg/types/config"
+	contextTY "github.com/mycontroller-org/2mqtt/pkg/types/context"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	js "github.com/mycontroller-org/server/v2/pkg/utils/javascript"
+	"go.uber.org/zap"
 )
 
 const (
@@ -18,8 +22,23 @@ const (
 )
 
 type RawProvider struct {
+	logger    *zap.Logger
 	name      string
 	formatter cfgTY.FormatterScript
+}
+
+func New(ctx context.Context, name string, formatter cfgTY.FormatterScript) (*RawProvider, error) {
+	logger, err := contextTY.LoggerFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_formatter := &RawProvider{
+		logger:    logger.Named("raw"),
+		name:      name,
+		formatter: formatter,
+	}
+	return _formatter, nil
 }
 
 func (rp *RawProvider) Name() string {
@@ -94,7 +113,8 @@ func (rp *RawProvider) executeScript(script string, msg *types.Message) (*types.
 	}
 
 	// executes script
-	response, err := js.Execute(script, input)
+	_timeout := time.Second * 2 // timeout 2 seconds
+	response, err := js.Execute(rp.logger, script, input, &_timeout)
 	if err != nil {
 		return nil, err
 	}

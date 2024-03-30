@@ -1,6 +1,7 @@
 package mqtt
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"strings"
@@ -8,6 +9,7 @@ import (
 
 	paho "github.com/eclipse/paho.mqtt.golang"
 	model "github.com/mycontroller-org/2mqtt/pkg/types"
+	contextTY "github.com/mycontroller-org/2mqtt/pkg/types/context"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"github.com/mycontroller-org/server/v2/pkg/utils"
@@ -19,26 +21,29 @@ import (
 const (
 	PluginMQTT = "mqtt"
 
-	transmitPreDelayDefault = time.Microsecond * 1 // 1 micro second
-	reconnectDelayDefault   = time.Second * 10     // 10 seconds
+	transmitPreDelayDefault  = time.Microsecond * 1 // 1 micro second
+	reconnectDelayDefault    = time.Second * 10     // 10 seconds
+	connectionTimeoutDefault = time.Second * 30     // 30 seconds
 )
 
 // Config struct
 type Config struct {
-	Name             string `yaml:"name"`
-	Broker           string `yaml:"broker"`
-	Insecure         bool   `yaml:"insecure"`
-	Username         string `yaml:"username"`
-	Password         string `yaml:"password" json:"-"`
-	Subscribe        string `yaml:"subscribe"`
-	Publish          string `yaml:"publish"`
-	QoS              int    `yaml:"qos"`
-	TransmitPreDelay string `yaml:"transmit_pre_delay"`
-	ReconnectDelay   string `yaml:"reconnect_delay"`
+	Name              string `yaml:"name"`
+	Broker            string `yaml:"broker"`
+	Insecure          bool   `yaml:"insecure"`
+	Username          string `yaml:"username"`
+	Password          string `yaml:"password" json:"-"`
+	Subscribe         string `yaml:"subscribe"`
+	Publish           string `yaml:"publish"`
+	QoS               int    `yaml:"qos"`
+	TransmitPreDelay  string `yaml:"transmit_pre_delay"`
+	ReconnectDelay    string `yaml:"reconnect_delay"`
+	ConnectionTimeout string `yaml:"connection_timeout"`
 }
 
 // Endpoint data
 type Endpoint struct {
+	logger         *zap.Logger
 	ID             string
 	Config         *Config
 	receiveMsgFunc func(msg *model.Message)
@@ -48,19 +53,25 @@ type Endpoint struct {
 }
 
 // NewDevice mqtt driver
-func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (deviceType.Plugin, error) {
+func NewDevice(ctx context.Context, ID string, config cmap.CustomMap, rxFunc func(msg *model.Message), statusFunc func(state *model.State)) (deviceType.Plugin, error) {
+	logger, err := contextTY.LoggerFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	start := time.Now()
 
 	var cfg Config
-	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+	err = utils.MapToStruct(utils.TagNameYaml, config, &cfg)
 	if err != nil {
+		logger.Error("error on converting map to struct", zap.Error(err))
 		return nil, err
 	}
-	zap.L().Debug("mqtt config", zap.Any("adapterName", ID), zap.Any("config", cfg))
+	logger.Debug("mqtt config", zap.Any("adapterName", ID), zap.Any("config", cfg))
 
 	// endpoint
 	endpoint := &Endpoint{
+		logger:         logger.Named("mqtt_client"),
 		ID:             ID,
 		Config:         &cfg,
 		receiveMsgFunc: rxFunc,
@@ -78,12 +89,15 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 	opts.SetConnectRetryInterval(utils.ToDuration(cfg.ReconnectDelay, reconnectDelayDefault))
 	opts.SetOnConnectHandler(endpoint.onConnectionHandler)
 	opts.SetConnectionLostHandler(endpoint.onConnectionLostHandler)
+	opts.SetConnectTimeout(utils.ToDuration(cfg.ConnectionTimeout, connectionTimeoutDefault))
 
 	// update tls config
 	tlsConfig := &tls.Config{InsecureSkipVerify: cfg.Insecure}
 	opts.SetTLSConfig(tlsConfig)
 
 	endpoint.Client = paho.NewClient(opts)
+
+	endpoint.logger.Debug("mqtt client connecting to broker", zap.Any("adapterName", ID), zap.Any("clientConfig", cfg))
 	token := endpoint.Client.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
 	}
@@ -91,7 +105,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *model.Message)
 		return nil, err
 	}
 
-	zap.L().Debug("mqtt client connected successfully", zap.Any("adapterName", ID), zap.String("timeTaken", time.Since(start).String()), zap.Any("clientConfig", cfg))
+	endpoint.logger.Debug("mqtt client connected successfully", zap.Any("adapterName", ID), zap.String("timeTaken", time.Since(start).String()), zap.Any("clientConfig", cfg))
 	return endpoint, nil
 }
 
@@ -100,11 +114,11 @@ func (ep *Endpoint) Name() string {
 }
 
 func (ep *Endpoint) onConnectionHandler(c paho.Client) {
-	zap.L().Debug("mqtt connection success", zap.Any("adapterName", ep.ID))
+	ep.logger.Debug("mqtt connection success", zap.Any("adapterName", ep.ID))
 
 	err := ep.Subscribe(ep.Config.Subscribe)
 	if err != nil {
-		zap.L().Error("error on subscribe topics", zap.Any("adapterName", ep.ID), zap.String("topics", ep.Config.Subscribe), zap.Error(err))
+		ep.logger.Error("error on subscribe topics", zap.Any("adapterName", ep.ID), zap.String("topics", ep.Config.Subscribe), zap.Error(err))
 	}
 
 	ep.statusFunc(&model.State{
@@ -115,7 +129,7 @@ func (ep *Endpoint) onConnectionHandler(c paho.Client) {
 }
 
 func (ep *Endpoint) onConnectionLostHandler(c paho.Client, err error) {
-	zap.L().Error("mqtt connection lost", zap.Any("adapterName", ep.ID), zap.Error(err))
+	ep.logger.Error("mqtt connection lost", zap.Any("adapterName", ep.ID), zap.Error(err))
 	// Report connection lost
 	if err != nil {
 		ep.statusFunc(&model.State{
@@ -131,7 +145,7 @@ func (ep *Endpoint) Write(message *model.Message) error {
 	if message == nil {
 		return nil
 	}
-	zap.L().Debug("about to send a message", zap.Any("adapterName", ep.ID), zap.String("message", message.ToString()))
+	ep.logger.Debug("about to send a message", zap.Any("adapterName", ep.ID), zap.String("message", message.ToString()))
 	topic := message.Others.GetString(model.KeyMqttTopic)
 	qos := byte(ep.Config.QoS)
 
@@ -157,7 +171,7 @@ func (ep *Endpoint) Close() error {
 	if ep.Client.IsConnected() {
 		ep.Client.Unsubscribe(ep.Config.Subscribe)
 		ep.Client.Disconnect(0)
-		zap.L().Debug("mqtt client connection closed", zap.String("adapterName", ep.ID))
+		ep.logger.Debug("mqtt client connection closed", zap.String("adapterName", ep.ID))
 	}
 	return nil
 }
@@ -182,10 +196,10 @@ func (ep *Endpoint) Subscribe(topicsStr string) error {
 		token := ep.Client.Subscribe(topic, 0, ep.getCallBack())
 		token.WaitTimeout(3 * time.Second)
 		if token.Error() != nil {
-			zap.L().Error("error on subscription", zap.String("adapterName", ep.ID), zap.String("topic", topic), zap.Error(token.Error()))
+			ep.logger.Error("error on subscription", zap.String("adapterName", ep.ID), zap.String("topic", topic), zap.Error(token.Error()))
 			return token.Error()
 		}
-		zap.L().Debug("subscribed a topic", zap.String("adapterName", ep.ID), zap.String("topic", topic))
+		ep.logger.Debug("subscribed a topic", zap.String("adapterName", ep.ID), zap.String("topic", topic))
 	}
 	return nil
 }

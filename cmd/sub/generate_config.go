@@ -21,9 +21,10 @@ var generateConfigCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		sampleConfig := cfgTY.Config{
 			Logger: cfgTY.LoggerConfig{
-				Mode:     "development",
-				Encoding: "console",
-				Level:    "info",
+				Mode:             "development",
+				Encoding:         "console",
+				Level:            "info",
+				EnableStacktrace: false,
 			},
 			Adapters: []cfgTY.AdapterConfig{
 				{

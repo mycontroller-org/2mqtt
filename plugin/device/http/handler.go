@@ -22,6 +22,7 @@ type RequestData struct {
 }
 
 type deviceHandler struct {
+	logger         *zap.Logger
 	ID             string
 	receiveMsgFunc func(rm *types.Message)
 }
@@ -34,7 +35,7 @@ func (h deviceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		r.Method == http.MethodDelete {
 		data, err := io.ReadAll(r.Body)
 		if err != nil {
-			zap.L().Error("error on reading body", zap.String("adapterName", h.ID), zap.String("path", r.URL.Path), zap.Error(err))
+			h.logger.Error("error on reading body", zap.String("adapterName", h.ID), zap.String("path", r.URL.Path), zap.Error(err))
 			return
 		}
 		body = string(data)
@@ -65,7 +66,7 @@ func (h deviceHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	bytes, err := json.Marshal(&requestData)
 	if err != nil {
-		zap.L().Error("error on converting request data to json bytes", zap.String("adapterName", h.ID), zap.String("path", r.URL.Path), zap.Error(err))
+		h.logger.Error("error on converting request data to json bytes", zap.String("adapterName", h.ID), zap.String("path", r.URL.Path), zap.Error(err))
 		return
 	}
 

@@ -1,9 +1,11 @@
 package serial
 
 import (
+	"context"
 	"time"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
+	contextTY "github.com/mycontroller-org/2mqtt/pkg/types/context"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"github.com/mycontroller-org/server/v2/pkg/utils"
@@ -32,6 +34,7 @@ type Config struct {
 
 // Endpoint data
 type Endpoint struct {
+	logger         *zap.Logger
 	ID             string
 	Config         *Config
 	serCfg         *ser.Config
@@ -43,10 +46,16 @@ type Endpoint struct {
 }
 
 // New serial client
-func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message), statusFunc func(state *types.State)) (deviceType.Plugin, error) {
-	var cfg Config
-	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+func NewDevice(ctx context.Context, ID string, config cmap.CustomMap, rxFunc func(msg *types.Message), statusFunc func(state *types.State)) (deviceType.Plugin, error) {
+	logger, err := contextTY.LoggerFromContext(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	var cfg Config
+	err = utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+	if err != nil {
+		logger.Error("error on converting map to struct", zap.Error(err))
 		return nil, err
 	}
 
@@ -55,17 +64,18 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message)
 		cfg.MessageSplitter = &splitter
 	}
 
-	zap.L().Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
+	logger.Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
 
 	serCfg := &ser.Config{Name: cfg.Port, Baud: cfg.BaudRate}
 
-	zap.L().Info("opening a serial port", zap.String("adapterName", ID), zap.String("port", cfg.Port))
+	logger.Info("opening a serial port", zap.String("adapterName", ID), zap.String("port", cfg.Port))
 	port, err := ser.OpenPort(serCfg)
 	if err != nil {
 		return nil, err
 	}
 
 	endpoint := &Endpoint{
+		logger:         logger.Named("serial_client"),
 		ID:             ID,
 		Config:         &cfg,
 		serCfg:         serCfg,
@@ -87,7 +97,7 @@ func (ep *Endpoint) Name() string {
 }
 
 func (ep *Endpoint) Write(message *types.Message) error {
-	if message == nil && len(message.Data) > 0 {
+	if message == nil || len(message.Data) == 0 {
 		return nil
 	}
 
@@ -111,11 +121,11 @@ func (ep *Endpoint) Close() error {
 
 	if ep.Port != nil {
 		if err := ep.Port.Flush(); err != nil {
-			zap.L().Error("error on flushing into serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
+			ep.logger.Error("error on flushing into serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
 		}
 		err := ep.Port.Close()
 		if err != nil {
-			zap.L().Error("error on closing the serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
+			ep.logger.Error("error on closing the serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
 		}
 		return err
 	}
@@ -129,23 +139,21 @@ func (ep *Endpoint) dataListener() {
 	for {
 		select {
 		case <-ep.safeClose.CH:
-			zap.L().Info("received a close signal.", zap.String("id", ep.ID), zap.String("port", ep.serCfg.Name))
+			ep.logger.Info("received a close signal.", zap.String("id", ep.ID), zap.String("port", ep.serCfg.Name))
 			return
 		default:
 			rxLength, err := ep.Port.Read(readBuf)
 			if err != nil {
-				zap.L().Error("error on reading data from a serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
+				ep.logger.Error("error on reading data from a serial port", zap.String("adapterName", ep.ID), zap.String("port", ep.serCfg.Name), zap.Error(err))
 				// notify failed
-				if err != nil {
-					ep.statusFunc(&types.State{
-						Status:  types.StatusError,
-						Message: err.Error(),
-						Since:   time.Now(),
-					})
-				}
+				ep.statusFunc(&types.State{
+					Status:  types.StatusError,
+					Message: err.Error(),
+					Since:   time.Now(),
+				})
 				return
 			}
-			//zap.L().Debug("data", zap.Any("data", string(data)))
+			//ep.logger.Debug("data", zap.Any("data", string(data)))
 			for index := 0; index < rxLength; index++ {
 				b := readBuf[index]
 				if b == *ep.Config.MessageSplitter {

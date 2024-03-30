@@ -1,11 +1,13 @@
 package ethernet
 
 import (
+	"context"
 	"net"
 	"net/url"
 	"time"
 
 	"github.com/mycontroller-org/2mqtt/pkg/types"
+	contextTY "github.com/mycontroller-org/2mqtt/pkg/types/context"
 	deviceType "github.com/mycontroller-org/2mqtt/plugin/device/types"
 	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
 	"github.com/mycontroller-org/server/v2/pkg/utils"
@@ -32,6 +34,7 @@ type Config struct {
 
 // Endpoint data
 type Endpoint struct {
+	logger         *zap.Logger
 	ID             string
 	Config         Config
 	connUrl        *url.URL
@@ -43,10 +46,16 @@ type Endpoint struct {
 }
 
 // NewDevice ethernet driver
-func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message), statusFunc func(state *types.State)) (deviceType.Plugin, error) {
-	var cfg Config
-	err := utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+func NewDevice(ctx context.Context, ID string, config cmap.CustomMap, rxFunc func(msg *types.Message), statusFunc func(state *types.State)) (deviceType.Plugin, error) {
+	logger, err := contextTY.LoggerFromContext(ctx)
 	if err != nil {
+		return nil, err
+	}
+
+	var cfg Config
+	err = utils.MapToStruct(utils.TagNameYaml, config, &cfg)
+	if err != nil {
+		logger.Error("error on converting map to struct", zap.Error(err))
 		return nil, err
 	}
 
@@ -55,7 +64,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message)
 		cfg.MessageSplitter = &splitter
 	}
 
-	zap.L().Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
+	logger.Debug("source device config", zap.String("id", ID), zap.Any("config", cfg))
 
 	serverURL, err := url.Parse(cfg.Server)
 	if err != nil {
@@ -68,6 +77,7 @@ func NewDevice(ID string, config cmap.CustomMap, rxFunc func(msg *types.Message)
 	}
 
 	endpoint := &Endpoint{
+		logger:         logger.Named("ethernet_client"),
 		ID:             ID,
 		Config:         cfg,
 		connUrl:        serverURL,
@@ -107,7 +117,7 @@ func (ep *Endpoint) Close() error {
 	if ep.conn != nil {
 		err := ep.conn.Close()
 		if err != nil {
-			zap.L().Error("error on closing a connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
+			ep.logger.Error("error on closing a connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
 		}
 		ep.conn = nil
 	}
@@ -121,12 +131,12 @@ func (ep *Endpoint) dataListener() {
 	for {
 		select {
 		case <-ep.safeClose.CH:
-			zap.L().Info("received close signal", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server))
+			ep.logger.Info("received close signal", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server))
 			return
 		default:
 			rxLength, err := ep.conn.Read(readBuf)
 			if err != nil {
-				zap.L().Error("error on reading data from a ethernet connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
+				ep.logger.Error("error on reading data from a ethernet connection", zap.String("adapterID", ep.ID), zap.String("server", ep.Config.Server), zap.Error(err))
 				state := &types.State{
 					Status:  types.StatusError,
 					Message: err.Error(),
