@@ -141,9 +141,10 @@ func (s *Service) mqttMessageProcessor(item interface{}) {
 		if err != nil {
 			s.logger.Error("error on writing a message to mqtt", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Error(err))
 		}
-	} else {
-		// TODO: this message will be dropped, needs to handle this message
 	}
+	// else {
+	// TODO: this message will be dropped, needs to handle this message
+	// }
 }
 
 func (s *Service) sourceMessageProcessor(item interface{}) {
@@ -165,9 +166,10 @@ func (s *Service) sourceMessageProcessor(item interface{}) {
 		if err != nil {
 			s.logger.Error("error on writing a message to source device", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Error(err))
 		}
-	} else {
-		// TODO: this message will be dropped, needs to handle this message
 	}
+	// else {
+	// TODO: this message will be dropped, needs to handle this message
+	// }
 }
 
 func (s *Service) onMqttMessage(message *types.Message) {

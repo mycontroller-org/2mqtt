@@ -54,7 +54,11 @@ var rootCmd = &cobra.Command{
 		// start service
 		ctx := context.Background()
 		toMqtt := helper.ToMqtt{}
-		toMqtt.Start(ctx, cfg)
+		err = toMqtt.Start(ctx, cfg)
+		if err != nil {
+			logger.Fatal("error on starting the service", zap.Error(err))
+		}
+
 	},
 }
 
