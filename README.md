@@ -25,7 +25,7 @@ docker run --detach --name 2mqtt \
     --device /dev/ttyUSB0:/dev/ttyUSB0 \
     --env  TZ="Asia/Kolkata" \
     --restart unless-stopped \
-    docker.io/mycontroller/2mqtt:1.4
+    docker.io/mycontroller/2mqtt:1.6
 ```
 
 ### Download Executables
