@@ -12,17 +12,18 @@ import (
 	contextTY "github.com/mycontroller-org/2mqtt/pkg/types/context"
 	devicePlugin "github.com/mycontroller-org/2mqtt/plugin/device"
 	providerPlugin "github.com/mycontroller-org/2mqtt/plugin/provider"
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
+	"github.com/mycontroller-org/server/v2/pkg/utils"
 	queue "github.com/mycontroller-org/server/v2/pkg/utils/queue"
 	"go.uber.org/zap"
 )
 
 // default settings
 const (
-	SourceQueueSize       = 1000
-	MQTTQueueSize         = 1000
+	DefaultQueueSize      = 1000
+	DefaultRetryInterval  = 1 * time.Second // 1 second
 	DefaultReconnectDelay = "30s"
-
-	MqttDeviceName = "mqtt"
+	MqttDeviceName        = "mqtt"
 )
 
 // Service component of the provider
@@ -73,8 +74,20 @@ func NewService(ctx context.Context, adapterCfg *config.AdapterConfig) (*Service
 		sourceID:      fmt.Sprintf("%s_adapter_source", adapterCfg.Name),
 		mqttID:        fmt.Sprintf("%s_adapter_mqtt", adapterCfg.Name),
 	}
-	s.sourceMessageQueue = queue.New(logger, s.sourceID, SourceQueueSize, func(item interface{}) {}, 1)
-	s.mqttMessageQueue = queue.New(logger, s.mqttID, MQTTQueueSize, func(item interface{}) {}, 1)
+
+	// get internal queue config
+	sourceQueueConfig, err := getQueueConfig(s.logger, adapterCfg.Source)
+	if err != nil {
+		return nil, err
+	}
+
+	mqttQueueConfig, err := getQueueConfig(s.logger, adapterCfg.MQTT)
+	if err != nil {
+		return nil, err
+	}
+
+	s.sourceMessageQueue = queue.NewWithRetry(logger, s.sourceID, sourceQueueConfig.QueueSize, func(item interface{}) error { return nil }, 1, sourceQueueConfig.RetryEnabled, sourceQueueConfig.RetryMaxCount, sourceQueueConfig.RetryInterval)
+	s.mqttMessageQueue = queue.NewWithRetry(logger, s.mqttID, mqttQueueConfig.QueueSize, func(item interface{}) error { return nil }, 1, mqttQueueConfig.RetryEnabled, mqttQueueConfig.RetryMaxCount, mqttQueueConfig.RetryInterval)
 
 	// update reconnectDelay
 	_, err = time.ParseDuration(adapterCfg.ReconnectDelay)
@@ -86,6 +99,35 @@ func NewService(ctx context.Context, adapterCfg *config.AdapterConfig) (*Service
 	}
 
 	return s, nil
+}
+
+func getQueueConfig(logger *zap.Logger, configMap cmap.CustomMap) (*config.QueueConfig, error) {
+	queueConfig := config.QueueConfig{}
+	queueConfigMap, found := configMap[config.KeyQueueConfig]
+	if found {
+		// type cast interface to map[interface]
+		queueConfigMap, ok := queueConfigMap.(map[string]interface{})
+		if ok {
+			err := utils.MapToStruct(utils.TagNameYaml, queueConfigMap, &queueConfig)
+			if err != nil {
+				logger.Error("error on converting map to struct", zap.Error(err))
+				return nil, err
+			}
+		}
+	}
+
+	// set default queue size
+	if queueConfig.QueueSize == 0 {
+		queueConfig.QueueSize = DefaultQueueSize
+	}
+
+	// set default retry interval
+	if queueConfig.RetryInterval == 0 {
+		queueConfig.RetryInterval = DefaultRetryInterval
+	}
+
+	return &queueConfig, nil
+
 }
 
 // Start starts a adapter service
@@ -121,18 +163,18 @@ func (s *Service) Stop() {
 	}
 }
 
-func (s *Service) mqttMessageProcessor(item interface{}) {
+func (s *Service) mqttMessageProcessor(item interface{}) error {
 	if item == nil {
-		return
+		return nil
 	}
 	message, ok := item.(*types.Message)
 	if !ok {
 		s.logger.Error("error on cast a message", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Any("message", item))
-		return
+		return nil
 	}
 	if message == nil {
 		s.logger.Error("message can not be nil", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider))
-		return
+		return nil
 	}
 
 	if s.statusMqtt.Status == types.StatusUP {
@@ -140,36 +182,38 @@ func (s *Service) mqttMessageProcessor(item interface{}) {
 		err := s.mqttDevice.Write(message)
 		if err != nil {
 			s.logger.Error("error on writing a message to mqtt", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Error(err))
+			return err
 		}
+	} else {
+		return fmt.Errorf("mqtt device is not in UP state, device ID: %s", s.mqttID)
 	}
-	// else {
-	// TODO: this message will be dropped, needs to handle this message
-	// }
+	return nil
 }
 
-func (s *Service) sourceMessageProcessor(item interface{}) {
+func (s *Service) sourceMessageProcessor(item interface{}) error {
 	if item == nil {
-		return
+		return nil
 	}
 	message, ok := item.(*types.Message)
 	if !ok {
 		s.logger.Error("error on cast a message", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Any("message", item))
-		return
+		return nil
 	}
 	if message == nil {
 		s.logger.Error("message can not be nil", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider))
-		return
+		return nil
 	}
 	if s.statusSource.Status == types.StatusUP {
 		s.logger.Debug("posting a message to source device", zap.String("message", message.ToString()), zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider))
 		err := s.sourceDevice.Write(message)
 		if err != nil {
 			s.logger.Error("error on writing a message to source device", zap.String("adapterName", s.adapterConfig.Name), zap.String("provider", s.adapterConfig.Provider), zap.Error(err))
+			return err
 		}
+	} else {
+		return fmt.Errorf("source device is not in UP state, device ID: %s", s.sourceID)
 	}
-	// else {
-	// TODO: this message will be dropped, needs to handle this message
-	// }
+	return nil
 }
 
 func (s *Service) onMqttMessage(message *types.Message) {

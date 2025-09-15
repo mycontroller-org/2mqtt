@@ -1,6 +1,14 @@
 package config
 
-import "github.com/mycontroller-org/server/v2/pkg/types/cmap"
+import (
+	"time"
+
+	"github.com/mycontroller-org/server/v2/pkg/types/cmap"
+)
+
+const (
+	KeyQueueConfig = "queue"
+)
 
 // Config
 type Config struct {
@@ -31,4 +39,12 @@ type AdapterConfig struct {
 type FormatterScript struct {
 	ToSource string `yaml:"to_source"`
 	ToMQTT   string `yaml:"to_mqtt"`
+}
+
+// internal queue config for provider and source
+type QueueConfig struct {
+	QueueSize     int           `yaml:"size"`
+	RetryEnabled  bool          `yaml:"retry_enabled"`
+	RetryMaxCount uint32        `yaml:"retry_max_count"`
+	RetryInterval time.Duration `yaml:"retry_interval"`
 }

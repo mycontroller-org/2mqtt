@@ -153,6 +153,12 @@ adapters:   # you can have more than one adapter
       port: /dev/ttyUSB0        # serial port
       baud_rate: 115200         # serial baud rate
       transmit_pre_delay: 10ms  # waits and sends a message, to avoid collision on the source network
+      queue:                  # optional, internal queue config
+        size: 1000            # maximum queue size, default: 1000 (if omitted)
+        retry_enabled: true   # enable/disable retry on failure
+        retry_interval: 1s    # retry interval on failure (starts with 100ms and increases on further retry)
+        retry_max_count: 0    # maximum retry count, 0 means unlimited
+
     mqtt: # mqtt broker details
       broker: tcp://192.168.10.21:1883  # broker url: supports tcp, mqtt, tls, mqtts
       insecure: false                   # enable/disable insecure on tls connection
@@ -164,6 +170,12 @@ adapters:   # you can have more than one adapter
       transmit_pre_delay: 0s
       reconnect_delay: 5s
       connection_timeout: 30s           # mqtt connection timeout (default 30 seconds)
+      queue:                  # optional, internal queue config
+        size: 1000            # maximum queue size, default: 1000 (if omitted)
+        retry_enabled: true   # enable/disable retry on failure
+        retry_interval: 1s    # retry interval on failure (starts with 100ms and increases on further retry)
+        retry_max_count: 0    # maximum retry count, 0 means unlimited
+
     formatter_script: # script used to perform custom formatting
       to_mqtt: |
         // your multiline javascript
